@@ -1,0 +1,18 @@
+{
+  "name": "twitch-auto-viewer",
+  "version": "1.0.0",
+  "description": "Monitors selected Twitch streamer and opens stream when live.",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron ."
+  },
+  "author": "Sebastian Jones",
+  "license": "MIT",
+  "devDependencies": {
+    "@electron/remote": "^2.0.8",
+    "electron": "^18.2.3",
+    "jquery": "^3.6.0",
+    "node-fetch": "^2.6.7"
+  }
+}

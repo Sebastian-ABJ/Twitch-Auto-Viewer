@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <title>Hello World!</title>
+  </head>
+  <body>
+    <h1>Hello World!</h1>
+    We are using Node.js <span id="node-version"></span>,
+    Chromium <span id="chrome-version"></span>,
+    and Electron <textarea id="electron-version"></textarea>.
+    <br>
+    Streamer:    <textarea id="streamer-variable"></textarea>
+    <br>
+    Interval (in seconds): <textarea id="interval-variable"></textarea>
+    <br>
+    <button id="update-button" name="update-button" cursor:pointer>Update</button>
+    <br>
+    <button id="check-stream-button" name="check-stream-button" cursor:pointer>Check Stream</button>
+    <br>
+    <button id="stop-button" name="stop-button" cursor:pointer>Stop Checking</button>
+    <br>
+    <button id="test-button" name="test-button" cursor:pointer>Test Invoke</button>
+
+    <script src="actions.js"></script>
+  </body>
+</html>
