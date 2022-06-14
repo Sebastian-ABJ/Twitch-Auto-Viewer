@@ -7,7 +7,7 @@ var token
 var validationTime
 var streamer
 var interval
-
+var clientID
 
 app.whenReady().then(async() => {
     settings.init()
@@ -16,25 +16,24 @@ app.whenReady().then(async() => {
     token = retrievedSettings.token
     streamer = retrievedSettings.streamer
     interval = retrievedSettings.interval
-
+    clientID = retrievedSettings.client_ID
 
     await verifyToken(token)
     .then(async response => {
         if (response.returnVal == 401) {
           createAuthWindow()
+        } else {
+          validationTime = response.validationTime
+          console.log("Token validated at: " + validationTime)
+          settings.updateValidationTime(validationTime)
+          createAppWindow()
         }
-
-      
-    })
-    .then( () => {
-      console.log("All settings good - starting app...")
-      createAppWindow()
     })
 })
 
 app.on('window-all-closed', () => {
     if (process.platform !== 'darwin') app.quit()
-  })
+})
 
 function twitchWindow() {
   const displays = screen.getAllDisplays();
@@ -106,7 +105,13 @@ function createAuthWindow() {
       hashStart = url.indexOf("=")
       hashEnd = url.indexOf("&")
       token = url.substring(hashStart + 1, hashEnd)
+
+      settings.updateToken(token)
       validationTime = new Date()
+      settings.updateValidationTime(validationTime)
+
+      createAppWindow()
+      
       return win.close()
   });
 
@@ -126,9 +131,14 @@ ipcMain.on('stream-found', () => {
   twitchWindow()
 })
 
-ipcMain.handle('requesting-streamer', async (event) => {
+ipcMain.handle('requesting-streamer', async () => {
   console.log("Sending " + streamer + " to renderer.")
   return streamer
+})
+
+ipcMain.handle('requesting-interval', async () => {
+  console.log("Sending " + interval + " to renderer.")
+  return interval
 })
 
 ipcMain.handle('requesting-token', async() => {
@@ -141,9 +151,22 @@ ipcMain.handle('requesting-validationTime', async () => {
   return validationTime
 })
 
-ipcMain.on('update-streamer', (event, newStreamer) => {
-  console.log("Changed streamer from " + streamer + " to " + newStreamer)
-  streamer = newStreamer
+ipcMain.handle('requesting-clientID', async() => {
+  console.log("Sending " + clientID + " to renderer.")
+  return clientID
+})
+
+ipcMain.on('update-streamer-interval', (event, newStreamer, newInterval) => {
+  if(streamer != newStreamer) {
+    console.log("Changed streamer from " + streamer + " to " + newStreamer)
+    streamer = newStreamer
+  }
+  if(interval != newInterval) {
+    console.log("Changing interval from " + interval + " to " + newInterval)
+    interval = newInterval
+  }
+  console.log("Updating saved settings.")
+  settings.update(streamer, interval)
 })
 
 ipcMain.on('update-token', (event, newToken) => {

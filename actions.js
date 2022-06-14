@@ -5,7 +5,7 @@ const { ipcRenderer } = require('electron')
 var loopCancel = false
 
 let updateButton = document.getElementById("update-button");
-updateButton.addEventListener("click", updateTest);
+updateButton.addEventListener("click", update);
 
 let checkStreamButton = document.getElementById("check-stream-button")
 checkStreamButton.addEventListener("click", streamLoop)
@@ -13,20 +13,14 @@ checkStreamButton.addEventListener("click", streamLoop)
 let stopButton = document.getElementById("stop-button")
 stopButton.addEventListener("click", stopLoop)
 
-let testButton = document.getElementById("test-button")
-testButton.addEventListener("click", test)
-
 async function streamLoop() {
     loopCancel = false
     streamFound = false
     const token = await ipcRenderer.invoke('requesting-token')
-    console.log(token)
-    const client_id = settings.getClientID()
-    var streamerElement = document.getElementById("streamer-variable")
-    var intervalElement = document.getElementById("interval-variable")
+    const client_id = await ipcRenderer.invoke('requesting-clientID')
     var streamer = await ipcRenderer.invoke('requesting-streamer')
     var validationTime = await ipcRenderer.invoke('requesting-validationTime')
-    var interval = parseInt(intervalElement.value)
+    var interval = parseInt(ipcRenderer.invoke('requesting-interval'))
 
     while(streamFound == false && loopCancel == false) {
         streamFound = await twitch.checkStream(token, client_id, streamer)
@@ -38,15 +32,14 @@ async function streamLoop() {
     }
 }
 
-async function test() {
-    const result = await ipcRenderer.invoke('my-invokable-ipc')
-    console.log(result) 
-  }
-
-async function updateTest() {
+async function update() {
     var streamerElement = document.getElementById("streamer-variable")
+    var intervalElement = document.getElementById("interval-variable")
     streamer = streamerElement.value
-    ipcRenderer.send('update-streamer', streamer)
+    interval = intervalElement.value
+    console.log("Sending " + streamer + " to main.")
+    console.log("Sending " + interval + " to main.")
+    ipcRenderer.send("update-streamer-interval", streamer, interval)
 }
 
 function stopLoop() {

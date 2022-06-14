@@ -3,7 +3,6 @@ const fetch = require('node-fetch')
 async function checkStream(token, clientID, streamer) {
     isLive = false
     api = "https://api.twitch.tv/helix/streams?user_login=" + streamer
-    console.log(api)
     await fetch(
         api,
         {

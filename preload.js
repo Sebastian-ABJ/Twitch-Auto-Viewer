@@ -1,11 +1,10 @@
 const fs = require('fs')
 const { ipcRenderer } = require('electron')
 const { stringify } = require('querystring')
-var settings = require('./settings')
-var interval = settings.getInterval()
 
 window.addEventListener('DOMContentLoaded', async () => {
   var streamer = await ipcRenderer.invoke('requesting-streamer')
+  var interval = await ipcRenderer.invoke('requesting-interval')
   const replaceText = (selector, text) => {
     const element = document.getElementById(selector)
     if (element) element.innerText = text
