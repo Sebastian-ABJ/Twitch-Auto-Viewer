@@ -1,29 +1,27 @@
 <!DOCTYPE html>
 <html>
   <head>
+    <link rel="stylesheet" href="styles.css">
     <meta charset="UTF-8">
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
     <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
     <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'">
-    <title>Hello World!</title>
+    <title>Twitch Auto Viewer</title>
   </head>
   <body>
-    <h1>Hello World!</h1>
-    We are using Node.js <span id="node-version"></span>,
-    Chromium <span id="chrome-version"></span>,
-    and Electron <textarea id="electron-version"></textarea>.
+    <h1 class="title">Twitch Auto Viewer</h1>
     <br>
-    Streamer:    <textarea id="streamer-variable"></textarea>
+    <label class="label" for="streamer-variable">Streamer:</label>
+    <textarea class="text-area" id="streamer-variable" name="streamer-variable" maxlength="25" rows="1" autofocus></textarea>
     <br>
-    Interval (in seconds): <textarea id="interval-variable"></textarea>
+    <label class="label" for="interval-variable">Interval (in seconds):</label>
+    <textarea class="text-area" id="interval-variable" name="interval-variable" maxlength="3" rows="1"></textarea>
     <br>
-    <button id="update-button" name="update-button" cursor:pointer>Update</button>
+    <button id="update-button" name="update-button">Update</button>
+    <button id="check-stream-button" name="check-stream-button">Check Stream</button>
+    <button id="stop-button" name="stop-button" disabled>Stop Checking</button>
     <br>
-    <button id="check-stream-button" name="check-stream-button" cursor:pointer>Check Stream</button>
-    <br>
-    <button id="stop-button" name="stop-button" cursor:pointer>Stop Checking</button>
-    <br>
-    <button id="test-button" name="test-button" cursor:pointer>Test Invoke</button>
+    <textarea id="log-box" rows="10" cols="80" disabled></textarea>
 
     <script src="actions.js"></script>
   </body>

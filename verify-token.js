@@ -16,12 +16,10 @@ async function verifyToken(access_token) {
         if (response.status) {
             if (response.status == 401) {
                 console.log("Token validation: Denied!")
-                //'This token is invalid: ' + response.message;
                 returnVal = 401
                 return    
             }
-            // 'Unexpected output with a status?';
-            return;
+            return
         }
         if (response.client_id) {
             console.log("Token validation: Accepted!")

@@ -1,8 +1,7 @@
-const { app, BrowserWindow, screen } = require('electron')
-const createAppWindow = require('./app-process')
+const { app, BrowserWindow, screen, ipcMain } = require('electron')
 const verifyToken = require('./verify-token')
 const settings = require('./settings.js')
-const { ipcMain } = require('electron')
+const path = require('path')
 var token
 var validationTime
 var streamer
@@ -42,7 +41,7 @@ function twitchWindow() {
   const url = "https://www.twitch.tv/" + streamer
   console.log(url)
   
-  const win = new BrowserWindow({
+  const twitchWin = new BrowserWindow({
     width: 1920,
     height: 1080,
     show:false,
@@ -54,11 +53,12 @@ function twitchWindow() {
       contextIsolation: false
     }
   })
-  win.loadURL(url)
-  //win.webContents.openDevTools();
-  win.once('ready-to-show', () => {
-      win.show()
-      win.webContents.on('did-finish-load', () => {
+  twitchWin.loadURL(url)
+  //twitchWin.webContents.openDevTools();
+  twitchWin.once('ready-to-show', () => {
+    twitchWin.show()
+    twitchWin.webContents.setZoomFactor(2.4)
+    twitchWin.webContents.on('did-finish-load', () => {
           let code = `
                       var streamButtons = document.getElementsByClassName('ScCoreButton-sc-1qn4ixc-0 cgCHoV ScButtonIcon-sc-o7ndmn-0 kwoFXD')
                       console.log(streamButtons)
@@ -75,14 +75,14 @@ function twitchWindow() {
                           }
                       }
                       `
-          win.webContents.executeJavaScript(code)
+                      twitchWin.webContents.executeJavaScript(code)
       })
   })
 }
 
-function createAuthWindow() {
+function createAuthWindow(preload) {
   console.log("Generating new security token...")
-  win = new BrowserWindow({
+  authWin = new BrowserWindow({
     width: 1000,
     height: 600,
     webPreferences: {
@@ -91,9 +91,9 @@ function createAuthWindow() {
     }
   });
 
-  win.loadURL("https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=9lyexvrvkjfh2mnygtma57mr7fp5a6&redirect_uri=http://localhost/callback");
+  authWin.loadURL("https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=9lyexvrvkjfh2mnygtma57mr7fp5a6&redirect_uri=http://localhost/callback");
 
-  const {session: {webRequest}} = win.webContents;
+  const {session: {webRequest}} = authWin.webContents;
 
   const filter = {
     urls: [
@@ -111,19 +111,75 @@ function createAuthWindow() {
       settings.updateValidationTime(validationTime)
 
       createAppWindow()
-      
-      return win.close()
+        
+      return authWin.close()
   });
 
-  win.on('authenticated', () => {
-    if (!win) return;
-    win.close();
-    win = null;
+  authWin.on('authenticated', () => {
+    if (!authWin) return;
+    authWin.close();
+    authWin = null;
   });
 
-  win.on('closed', () => {
-    win = null;
+  authWin.on('closed', () => {
+    authWin = null;
   });
+}
+
+function createAppWindow() {
+  const appWin = new BrowserWindow({
+    width: 800,
+    height: 600,
+    resizable: false,
+    webPreferences: {  
+      nodeIntegration:true,
+      contextIsolation: false,
+      enableRemoteModule: true,
+      preload: path.join(__dirname, 'preload.js')
+    },
+    show:false
+  })
+  appWin.loadFile('index.html')
+  //appWin.webContents.openDevTools();
+  appWin.once('ready-to-show', () => {
+    appWin.show()
+  }) 
+
+  ipcMain.on('requesting-new-token', () => {
+    console.log("Generating new security token...")
+    authWin = new BrowserWindow({
+      width: 1000,
+      height: 600,
+      webPreferences: {
+        nodeIntegration: true,
+        enableRemoteModule: true
+      }
+    });
+
+    authWin.loadURL("https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=9lyexvrvkjfh2mnygtma57mr7fp5a6&redirect_uri=http://localhost/callback");
+
+    const {session: {webRequest}} = authWin.webContents;
+
+    const filter = {
+      urls: [
+        'http://localhost/callback'
+      ]
+    };
+
+    webRequest.onBeforeRequest(filter, async ({url}) => {
+        hashStart = url.indexOf("=")
+        hashEnd = url.indexOf("&")
+        token = url.substring(hashStart + 1, hashEnd)
+        
+        settings.updateToken(token)
+        validationTime = new Date()
+        settings.updateValidationTime(validationTime)
+
+        appWin.webContents.send('new-token-sent')
+
+        authWin.close()
+    })
+  })
 }
 
 ipcMain.on('stream-found', () => {
@@ -146,8 +202,26 @@ ipcMain.handle('requesting-token', async() => {
   return token
 })
 
+ipcMain.handle('validate-token', async () => {
+  console.log("Validating token")
+  var returnVal
+
+  await verifyToken(token)
+  .then(async response => {
+    if (response.returnVal == 401) {
+      returnVal = false
+    } else {
+      validationTime = response.validationTime
+      console.log("Token validated at: " + validationTime)
+      settings.updateValidationTime(validationTime)
+      returnVal = true
+    }
+  })
+  return returnVal
+})
+
 ipcMain.handle('requesting-validationTime', async () => {
-  console.log("Sening " + validationTime + " to renderer.")
+  console.log("Sending " + validationTime + " to renderer.")
   return validationTime
 })
 

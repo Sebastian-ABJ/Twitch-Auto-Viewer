@@ -10,9 +10,7 @@
   "author": "Sebastian Jones",
   "license": "MIT",
   "devDependencies": {
-    "@electron/remote": "^2.0.8",
     "electron": "^18.2.3",
-    "jquery": "^3.6.0",
     "node-fetch": "^2.6.7"
   }
 }
