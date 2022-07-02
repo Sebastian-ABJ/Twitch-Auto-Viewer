@@ -11,15 +11,9 @@
   <body>
     <h1 class="title">Twitch Auto Viewer</h1>
     <br>
-    <label class="label" for="streamer-variable">Streamer:</label>
-    <textarea class="text-area" id="streamer-variable" name="streamer-variable" maxlength="25" rows="1" autofocus></textarea>
-    <br>
-    <label class="label" for="interval-variable">Interval (in seconds):</label>
-    <textarea class="text-area" id="interval-variable" name="interval-variable" maxlength="3" rows="1"></textarea>
-    <br>
-    <button id="update-button" name="update-button">Update</button>
-    <button id="check-stream-button" name="check-stream-button">Check Stream</button>
-    <button id="stop-button" name="stop-button" disabled>Stop Checking</button>
+    <span id="status">Monitoring [streamer] on an [speed] interval.</span>
+    <button id="settings-button" name="settings-button">Settings</button>
+    <button id="check-stream-button" name="check-stream-button">Go!</button>
     <br>
     <textarea id="log-box" rows="10" cols="80" disabled></textarea>
 

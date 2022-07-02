@@ -10,14 +10,17 @@ body {
     width: 50%;
     text-align: center;
     color: #EDF2F4;
+    text-decoration: underline;
 }
 
 .label {
     font-family: Arial, Helvetica, sans-serif;
     color: #EDF2F4;
+    font-size: 28px;
 }
 
 .text-area {
+    margin-right: 5%;
     font-family: Arial, Helvetica, sans-serif;
     text-align: center;
     resize: none;
@@ -28,6 +31,15 @@ body {
 .button {
     font-family: Arial, Helvetica, sans-serif;
     cursor:pointer;
+}
+#settings {
+    text-align: left;
+}
+
+#status {
+    font-family: Arial, Helvetica, sans-serif;
+    color: #EDF2F4;
+    font-size: 24px;
 }
 
 #log-box {

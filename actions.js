@@ -1,16 +1,21 @@
 const twitch = require('./twitch-api')
 const { ipcRenderer } = require('electron')
 
-var loopCancel = false
+var loopCancel = true
 
-let updateButton = document.getElementById("update-button");
-updateButton.addEventListener("click", update);
+let updateButton = document.getElementById("settings-button");
+updateButton.addEventListener("click", openSettings);
 
 let checkStreamButton = document.getElementById("check-stream-button")
-checkStreamButton.addEventListener("click", streamLoop)
+checkStreamButton.addEventListener("click", actionHandler)
 
-let stopButton = document.getElementById("stop-button")
-stopButton.addEventListener("click", stopLoop)
+function actionHandler() {
+    if(loopCancel) {
+        streamLoop()
+    } else {
+        stopLoop()
+    }
+}
 
 async function streamLoop() {
     loopCancel = false
@@ -19,10 +24,9 @@ async function streamLoop() {
     const client_id = await ipcRenderer.invoke('requesting-clientID')
     var streamer = await ipcRenderer.invoke('requesting-streamer')
     var validationTime = await ipcRenderer.invoke('requesting-validationTime')
-    var interval = parseInt(await ipcRenderer.invoke('requesting-interval'))
-
-    checkStreamButton.disabled = true
-    stopButton.disabled = false
+    var speedVal = parseInt(await ipcRenderer.invoke('requesting-speedVal'))
+    checkStreamButton.disabled = false
+    checkStreamButton.innerText="Stop"
 
     updateLog("Monitoring Twitch for livestream...")
 
@@ -47,32 +51,55 @@ async function streamLoop() {
             updateLog("Streamer not live.")
         }
 
-        await wait(interval * 1000)
+        var time
+        if(speedVal == "1") {
+            time = 100
+        } else if(speedVal == "2") {
+            time = 5000
+        } else if(speedVal == "3") {
+            time = 54000
+        } else if(speedVal == "4") {
+            time = 270000
+        }
+        await wait(time)
     }
+    updateLog("Monitoring stopped.")
 }
 
-function update() {
-    var streamerElement = document.getElementById("streamer-variable")
-    var intervalElement = document.getElementById("interval-variable")
-    streamer = streamerElement.value
-    interval = intervalElement.value
-    console.log("Sending " + streamer + " to main.")
-    console.log("Sending " + interval + " to main.")
-    ipcRenderer.send("update-streamer-interval", streamer, interval)
-
-    updateLog("Settings updated.")
+function openSettings() {
+    if(loopCancel == false) {
+        stopLoop()
+    }
+    updateLog('Opening settings...')
+    ipcRenderer.send('open-settings')
 }
 
 function stopLoop() {
     loopCancel = true
-    checkStreamButton.disabled = false
-    updateLog("Halting stream monitoring.")
+    checkStreamButton.innerText = "Go!"
+    updateLog("Halting stream monitoring...")
 }
 
-//Amazing wait function that seems to work without issue
+/* Amazing wait function that seems to work without issue
 function wait(time) {
     return new Promise(resolve => {
         setTimeout(() => { resolve() }, time);
+    })
+}
+*/
+async function wait(time) {
+    await delay()
+
+    if(time <= 0 || loopCancel == true) {       //Pipe helps prevent responsiveness delay
+        return
+    } else {
+       await wait(time - 100)
+    }
+}
+
+function delay() {
+    return new Promise(resolve => {
+        setTimeout(() => { resolve() }, 100);
     })
 }
 
@@ -106,4 +133,11 @@ ipcRenderer.on('new-token-sent', async () => {
     token = await ipcRenderer.invoke('requesting-token')
     updateLog("New token acquired: " + token)
     releaseApp()
+})
+
+ipcRenderer.on('updated-settings', (event, streamer, speed) => {
+    statusElement = document.getElementById('status')
+    statusText = statusElement.innerText = 
+        "Monitoring " + streamer + " on a " + speed + " interval."
+    updateLog("Settings updated.")
 })

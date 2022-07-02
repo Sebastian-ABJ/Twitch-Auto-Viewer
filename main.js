@@ -5,7 +5,8 @@ const path = require('path')
 var token
 var validationTime
 var streamer
-var interval
+var speed
+var speedVal
 var clientID
 
 app.whenReady().then(async() => {
@@ -14,7 +15,8 @@ app.whenReady().then(async() => {
     var retrievedSettings = settings.getSettings()
     token = retrievedSettings.token
     streamer = retrievedSettings.streamer
-    interval = retrievedSettings.interval
+    speed = retrievedSettings.speed
+    speedVal = retrievedSettings.speedVal
     clientID = retrievedSettings.client_ID
 
     await verifyToken(token)
@@ -129,13 +131,13 @@ function createAuthWindow(preload) {
 function createAppWindow() {
   const appWin = new BrowserWindow({
     width: 800,
-    height: 600,
+    height: 400,
     resizable: false,
     webPreferences: {  
       nodeIntegration:true,
       contextIsolation: false,
       enableRemoteModule: true,
-      preload: path.join(__dirname, 'preload.js')
+      preload: path.join(__dirname, 'appPreload.js')
     },
     show:false
   })
@@ -180,6 +182,46 @@ function createAppWindow() {
         authWin.close()
     })
   })
+
+  ipcMain.on("open-settings", () => {
+    let [appX, appY] = appWin.getPosition()
+    settingsWin = new BrowserWindow({
+      webPreferences: {
+        nodeIntegration: true,
+        enableRemoteModule: true,
+        contextIsolation: false,
+        preload: path.join(__dirname, 'settingsPreload.js')
+      },
+      width: 720,
+      height: 200,
+      x: appX + 40,
+      y: appY + 50,
+      parent: appWin,
+      modal: true,
+    })
+    settingsWin.removeMenu()
+    settingsWin.loadFile('settings.html')
+
+    ipcMain.on('update-streamer-speedVal', (event, newStreamer, newSpeed, newSpeedVal) => {
+      if(streamer != newStreamer) {
+        console.log("Changed streamer from " + streamer + " to " + newStreamer)
+        streamer = newStreamer
+      }
+      if(speedVal != newSpeedVal) {
+        console.log("Changing speed from " + speed + " to " + newSpeed)
+        console.log("Changing speed value from " + speedVal + " to " + newSpeedVal)
+        speed = newSpeed
+        speedVal = newSpeedVal
+      }
+      console.log("Updating saved settings.")
+      settings.update(streamer, speed, speedVal)
+
+      appWin.webContents.send('updated-settings', streamer, speed)
+
+      settingsWin.close()
+    })
+  })
+
 }
 
 ipcMain.on('stream-found', () => {
@@ -192,9 +234,14 @@ ipcMain.handle('requesting-streamer', async () => {
   return streamer
 })
 
-ipcMain.handle('requesting-interval', async () => {
-  console.log("Sending " + interval + " to renderer.")
-  return interval
+ipcMain.handle("requesting-speed", async () => {
+  console.log("Sending " + speed + " to renderer.")
+  return speed
+})
+
+ipcMain.handle('requesting-speedVal', async () => {
+  console.log("Sending " + speedVal + " to renderer.")
+  return speedVal
 })
 
 ipcMain.handle('requesting-token', async() => {
@@ -228,19 +275,6 @@ ipcMain.handle('requesting-validationTime', async () => {
 ipcMain.handle('requesting-clientID', async() => {
   console.log("Sending " + clientID + " to renderer.")
   return clientID
-})
-
-ipcMain.on('update-streamer-interval', (event, newStreamer, newInterval) => {
-  if(streamer != newStreamer) {
-    console.log("Changed streamer from " + streamer + " to " + newStreamer)
-    streamer = newStreamer
-  }
-  if(interval != newInterval) {
-    console.log("Changing interval from " + interval + " to " + newInterval)
-    interval = newInterval
-  }
-  console.log("Updating saved settings.")
-  settings.update(streamer, interval)
 })
 
 ipcMain.on('update-token', (event, newToken) => {

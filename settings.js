@@ -5,7 +5,8 @@ function init() {
     console.log("No settings found, initializing to defaults...")
     settingsJSON = {
       "streamer": "None",
-      "interval": "10",
+      "speed": "ASAP",
+      "speedVal": "1",
       "token":"",
       "validation_time": "",
       "client_ID": "9lyexvrvkjfh2mnygtma57mr7fp5a6"
@@ -18,10 +19,11 @@ function getSettings() {
   return settingsJSON = require ('./settings.json')
 }
 
-function update(streamer, interval) {
+function update(streamer, speed, speedVal) {
   var settingsJSON = require ('./settings.json')
   settingsJSON.streamer = streamer
-  settingsJSON.interval = interval
+  settingsJSON.speed = speed
+  settingsJSON.speedVal = speedVal
   fs.writeFileSync('./settings.json', JSON.stringify(settingsJSON, null, 4))
   console.log("Settings updated.")
 }
