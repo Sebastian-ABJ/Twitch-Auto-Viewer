@@ -6,7 +6,7 @@ var token
 var validationTime
 var streamer
 var speed
-var speedVal
+var displayID
 var clientID
 
 app.whenReady().then(async() => {
@@ -37,18 +37,16 @@ app.on('window-all-closed', () => {
 })
 
 function twitchWindow() {
-  const displays = screen.getAllDisplays();
-  const externalDisplay = displays.find(
-  display => display.bounds.x !== 0 || display.bounds.y !== 0)
+  targetDisplay = getTargetDisplay(displayID)
   const url = "https://www.twitch.tv/" + streamer
   console.log(url)
   
   const twitchWin = new BrowserWindow({
-    width: 1920,
-    height: 1080,
+    width: 1280,
+    height: 720,
     show:false,
-    x: externalDisplay.bounds.x,
-    y: externalDisplay.bounds.y,
+    x: targetDisplay.bounds.x,
+    y: targetDisplay.bounds.y,
     fullscreen: true,
     webPreferences: {
       nodeIntegration:true,
@@ -80,6 +78,20 @@ function twitchWindow() {
                       twitchWin.webContents.executeJavaScript(code)
       })
   })
+
+  function getTargetDisplay(displayID) {
+    const displays = screen.getAllDisplays()
+
+    for(var i = 0; i < displays.length; i++) {
+      if (displayID == displays[i].id) {
+        return displays[i];
+      }
+    }
+
+    var defaultDisplay = screen.getPrimaryDisplay()
+    displayID = defaultDisplay.id
+    return defaultDisplay
+  }
 }
 
 function createAuthWindow(preload) {
@@ -199,10 +211,11 @@ function createAppWindow() {
       parent: appWin,
       modal: true,
     })
+    //settingsWin.webContents.openDevTools()
     settingsWin.removeMenu()
     settingsWin.loadFile('settings.html')
 
-    ipcMain.on('update-streamer-speedVal', (event, newStreamer, newSpeed, newSpeedVal) => {
+    ipcMain.on('update-streamer-speedVal-display', (event, newStreamer, newSpeed, newSpeedVal, newDisplay) => {
       if(streamer != newStreamer) {
         console.log("Changed streamer from " + streamer + " to " + newStreamer)
         streamer = newStreamer
@@ -213,8 +226,12 @@ function createAppWindow() {
         speed = newSpeed
         speedVal = newSpeedVal
       }
+      if(displayID != newDisplay) {
+        console.log("Changing display from " + displayID + " to " + newDisplay)
+        displayID = newDisplay
+      }
       console.log("Updating saved settings.")
-      settings.update(streamer, speed, speedVal)
+      settings.update(streamer, speed, speedVal, displayID)
 
       appWin.webContents.send('updated-settings', streamer, speed)
 
@@ -275,6 +292,20 @@ ipcMain.handle('requesting-validationTime', async () => {
 ipcMain.handle('requesting-clientID', async() => {
   console.log("Sending " + clientID + " to renderer.")
   return clientID
+})
+
+ipcMain.handle('requesting-displays', async() => {
+  console.log("Sending displays to renderer")
+  var displays = screen.getAllDisplays()
+  console.log(displays)
+  return displays
+})
+
+ipcMain.handle('requesting-primary-display', async() => {
+  console.log("Sending displays to renderer")
+  var display = screen.getPrimaryDisplay()
+  console.log(display)
+  return display.id
 })
 
 ipcMain.on('update-token', (event, newToken) => {

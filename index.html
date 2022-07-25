@@ -10,11 +10,11 @@
   </head>
   <body>
     <h1 class="title">Twitch Auto Viewer</h1>
+    <span id="status">[ Monitoring [streamer] on an [speed] interval. ]</span>
     <br>
-    <span id="status">Monitoring [streamer] on an [speed] interval.</span>
-    <button id="settings-button" name="settings-button">Settings</button>
-    <button id="check-stream-button" name="check-stream-button">Go!</button>
-    <br>
+    <p id="settings-button" class="button" name="settings-button">Settings</p>
+    <p id="check-stream-button" class="button" name="check-stream-button">Go!</p>
+    <hr>
     <textarea id="log-box" rows="10" cols="80" disabled></textarea>
 
     <script src="actions.js"></script>

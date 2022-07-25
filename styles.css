@@ -50,3 +50,19 @@ body {
     color: #EDF2F4;
     resize: none;
 }
+
+p.button {
+    font-family: Arial, Helvetica, sans-serif;
+    color: #EDF2F4;
+    font-size: 28px;
+    background-color: darkslategrey;
+    border: 1px solid #EDF2F4;
+    padding: 10px 20px;
+    margin: 5px 10px;
+    display: inline-block;
+}
+
+p.button:hover {
+    background-color:cadetblue;
+    cursor: pointer;
+}

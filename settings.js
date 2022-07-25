@@ -9,6 +9,7 @@ function init() {
       "speedVal": "1",
       "token":"",
       "validation_time": "",
+      "display_ID": "",
       "client_ID": "9lyexvrvkjfh2mnygtma57mr7fp5a6"
     }
     fs.writeFileSync('./settings.json', JSON.stringify(settingsJSON, null, 4))
@@ -19,11 +20,12 @@ function getSettings() {
   return settingsJSON = require ('./settings.json')
 }
 
-function update(streamer, speed, speedVal) {
+function update(streamer, speed, speedVal, displayID) {
   var settingsJSON = require ('./settings.json')
   settingsJSON.streamer = streamer
   settingsJSON.speed = speed
   settingsJSON.speedVal = speedVal
+  settingsJSON.display_ID = displayID
   fs.writeFileSync('./settings.json', JSON.stringify(settingsJSON, null, 4))
   console.log("Settings updated.")
 }
