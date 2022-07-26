@@ -9,6 +9,8 @@ var speed
 var displayID
 var clientID
 
+if (require('electron-squirrel-startup')) return app.quit();
+
 app.whenReady().then(async() => {
     settings.init()
 
