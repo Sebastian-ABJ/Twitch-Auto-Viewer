@@ -37,7 +37,7 @@ app.on('window-all-closed', () => {
 })
 
 function twitchWindow() {
-  targetDisplay = getTargetDisplay(displayID)
+  targetDisplay = getTargetDisplay()
   const url = "https://www.twitch.tv/" + streamer
   console.log(url)
   
@@ -78,20 +78,44 @@ function twitchWindow() {
                       twitchWin.webContents.executeJavaScript(code)
       })
   })
+}
 
-  function getTargetDisplay(displayID) {
-    const displays = screen.getAllDisplays()
-
-    for(var i = 0; i < displays.length; i++) {
-      if (displayID == displays[i].id) {
-        return displays[i];
-      }
+function createBroadcastsWindow() {
+  targetDisplay = getTargetDisplay()
+  const url = "https://www.twitch.tv/" + streamer + "/videos?filter=archives&sort=time"
+  console.log(url)
+  
+  const broadcastsWindow = new BrowserWindow({
+    width: 1280,
+    height: 720,
+    show:false,
+    x: targetDisplay.bounds.x,
+    y: targetDisplay.bounds.y,
+    fullscreen: true,
+    webPreferences: {
+      nodeIntegration:true,
+      contextIsolation: false
     }
+  })
+  broadcastsWindow.loadURL(url)
+  broadcastsWindow.once('ready-to-show', () => {
+    broadcastsWindow.show()
+    broadcastsWindow.webContents.setZoomFactor(2.4)
+  })
+}
 
-    var defaultDisplay = screen.getPrimaryDisplay()
-    displayID = defaultDisplay.id
-    return defaultDisplay
+function getTargetDisplay() {
+  const displays = screen.getAllDisplays()
+
+  for(var i = 0; i < displays.length; i++) {
+    if (displayID == displays[i].id) {
+      return displays[i];
+    }
   }
+
+  var defaultDisplay = screen.getPrimaryDisplay()
+  displayID = defaultDisplay.id
+  return defaultDisplay
 }
 
 function createAuthWindow(preload) {
@@ -244,6 +268,13 @@ function createAppWindow() {
 ipcMain.on('stream-found', () => {
   console.log("Stream detected! Opening...")
   twitchWindow()
+})
+
+ipcMain.on('open-broadcasts', () => {
+  if(streamer != "") {
+    console.log("Opening past broadcasts...")
+    createBroadcastsWindow()
+  }
 })
 
 ipcMain.handle('requesting-streamer', async () => {

@@ -9,6 +9,9 @@ updateButton.addEventListener("click", openSettings);
 let checkStreamButton = document.getElementById("check-stream-button")
 checkStreamButton.addEventListener("click", actionHandler)
 
+let broadcastsButton = document.getElementById("broadcasts-button")
+broadcastsButton.addEventListener("click", openBroadcasts)
+
 function actionHandler() {
     if(loopCancel) {
         streamLoop()
@@ -75,9 +78,17 @@ function openSettings() {
 }
 
 function stopLoop() {
-    loopCancel = true
-    checkStreamButton.innerText = "Go!"
-    updateLog("Halting stream monitoring...")
+    if (loopCancel == false) {
+        loopCancel = true
+        checkStreamButton.innerText = "Go!"
+        updateLog("Halting stream monitoring...")
+    }
+}
+
+function openBroadcasts() {
+    stopLoop()
+    ipcRenderer.send('open-broadcasts')
+
 }
 
 /* Amazing wait function that seems to work without issue
