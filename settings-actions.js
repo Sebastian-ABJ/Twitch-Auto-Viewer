@@ -1,3 +1,6 @@
+//  Handles updating the settings
+//  Pretty sure this needs to be a separate file but I forget why
+
 const { ipcRenderer } = require('electron')
 
 let updateButton = document.getElementById("update-button");

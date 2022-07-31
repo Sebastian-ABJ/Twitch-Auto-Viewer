@@ -54,15 +54,15 @@ async function streamLoop() {
             updateLog("Streamer not live.")
         }
 
-        var time
-        if(speedVal == "1") {
-            time = 100
+        var time                            //  Speed intervals from ASAP to Slow, not very precise for some reason
+        if(speedVal == "1") {               
+            time = 100          //  ~1/10 sec
         } else if(speedVal == "2") {
-            time = 5000
+            time = 5000         //  ~5 sec
         } else if(speedVal == "3") {
-            time = 54000
+            time = 54000        //  ~1 min
         } else if(speedVal == "4") {
-            time = 270000
+            time = 270000       //  ~5 min
         }
         await wait(time)
     }
@@ -91,6 +91,16 @@ function openBroadcasts() {
 
 }
 
+async function wait(time) {
+    await delay()
+
+    if(time <= 0 || loopCancel == true) {       //  Pipe helps prevent responsiveness delay
+        return
+    } else {
+       await wait(time - 100)                   //  Breaks up wait function up in 1/10 sec intervals to prevent unwanted API call in between actual intervals
+    }
+}
+
 /* Amazing wait function that seems to work without issue
 function wait(time) {
     return new Promise(resolve => {
@@ -98,23 +108,14 @@ function wait(time) {
     })
 }
 */
-async function wait(time) {
-    await delay()
 
-    if(time <= 0 || loopCancel == true) {       //Pipe helps prevent responsiveness delay
-        return
-    } else {
-       await wait(time - 100)
-    }
-}
-
-function delay() {
+function delay() {                              //  Modified wait function from above
     return new Promise(resolve => {
         setTimeout(() => { resolve() }, 100);
     })
 }
 
-function tokenExceedsValidationTime(validationTime) {
+function tokenExceedsValidationTime(validationTime) {       //  Adheres to Twitch's hourly token validation policy
     var d = new Date()
     if(d.getHours() > (validationTime.getHours() + 1)) {
         return true
@@ -123,30 +124,34 @@ function tokenExceedsValidationTime(validationTime) {
     }
 }
 
-function updateLog(text) {
+function updateLog(text) {                          //  Boy do I love application logs
     let logBox = document.getElementById("log-box")
     let d = new Date()
     let timestamp = d.toLocaleDateString() + " " + d.toLocaleTimeString()
 
     logBox.value += "\n" + timestamp + ": " + text
-    logBox.scrollTop = logBox.scrollHeight              //Keeps textbox scrolled down with new entries
+
+    logBox.scrollTop = logBox.scrollHeight              //  Keeps textbox scrolled down with new entries
 }
 
 function pauseApp() {
+    //TODO: Prevent app from being used when authentication window is open
     updateLog("App paused until new token is acquired.")
 }
 
 function releaseApp() {
+    //TODO: Prevent app from being used when authentication window is open
     updateLog("Releasing app control.")
 }
 
-ipcRenderer.on('new-token-sent', async () => {
+//  Begin communication channels to main process
+ipcRenderer.on('new-token-sent', async () => {              //  Retrieves updated token should validation fail
     token = await ipcRenderer.invoke('requesting-token')
     updateLog("New token acquired: " + token)
     releaseApp()
 })
 
-ipcRenderer.on('updated-settings', (event, streamer, speed) => {
+ipcRenderer.on('updated-settings', (event, streamer, speed) => {       //   Updates status text when new settings are applied
     statusElement = document.getElementById('status')
     statusText = statusElement.innerText = 
         "Monitoring " + streamer + " on a " + speed + " interval."

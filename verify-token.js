@@ -26,14 +26,12 @@ async function verifyToken(access_token) {
             
             returnVal = 200
             validationTime = new Date()
-            // token is valid was was generated for that client_id
             return
         }
-        // if got here unexpected output from twitch
+        console.log(response)           // If got here, unexpected output from twitch
     })
     .catch(err => {
         console.log(err);
-        // 'An Error Occured loading token data';
     });
     returnData = {
         'returnVal': returnVal,
