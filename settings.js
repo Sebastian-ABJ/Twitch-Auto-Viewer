@@ -1,6 +1,7 @@
+//  All things having to do with the settings file of the app
+
 const electron = require('electron')
 const fs = require('fs')
-const path = require('path')
 const userDataPath = (electron.app || electron.remote.app).getPath('userData') + "/settings.json";
 console.log(userDataPath)
 
@@ -14,7 +15,7 @@ function init() {
       "token":"",
       "validation_time": "",
       "display_ID": "",
-      "client_ID": "9lyexvrvkjfh2mnygtma57mr7fp5a6"
+      "client_ID": "9lyexvrvkjfh2mnygtma57mr7fp5a6"                       //  Static variable set by Twitch
     }
     fs.writeFileSync(userDataPath, JSON.stringify(settingsJSON, null, 4))
   }

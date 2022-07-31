@@ -1,4 +1,4 @@
-const { app, BrowserWindow, screen, ipcMain } = require('electron')
+const { app, BrowserWindow, screen, ipcMain, powerSaveBlocker } = require('electron')
 const verifyToken = require('./verify-token')
 const settings = require('./settings.js')
 const path = require('path')
@@ -9,33 +9,33 @@ var speed
 var displayID
 var clientID
 
-if (require('electron-squirrel-startup')) return app.quit();
+if (require('electron-squirrel-startup')) return app.quit();    //  Prevents startup before installation on Windows
 
 app.whenReady().then(async() => {
-    settings.init()
+    settings.init()                                 //  Gets relevant settings or creates default ones if none exist
+    var retrievedSettings = settings.getSettings()  
 
-    var retrievedSettings = settings.getSettings()
     token = retrievedSettings.token
     streamer = retrievedSettings.streamer
     speed = retrievedSettings.speed
     speedVal = retrievedSettings.speedVal
     clientID = retrievedSettings.client_ID
 
-    await verifyToken(token)
-    .then(async response => {
+    await verifyToken(token)          //  Gets access token and validates it. Authenticates user to create new one if none exist
+    .then(async response => {         //  Starts up app when valid token is retrieved
         if (response.returnVal == 401) {
           createAuthWindow()
         } else {
           validationTime = response.validationTime
           console.log("Token validated at: " + validationTime)
           settings.updateValidationTime(validationTime)
-          createAppWindow()
+          createAppWindow()                             //  If token is valid, the invalid token branch will open via the AuthWindow
         }
     })
 })
 
-app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') app.quit()
+app.on('window-all-closed', () => {               //  Keeps app from lingering on MacOS when all windows are closed
+    if (process.platform == 'darwin') app.quit()
 })
 
 function twitchWindow() {
@@ -60,7 +60,7 @@ function twitchWindow() {
   twitchWin.once('ready-to-show', () => {
     twitchWin.show()
     twitchWin.webContents.setZoomFactor(2.4)
-    twitchWin.webContents.on('did-finish-load', () => {
+    twitchWin.webContents.on('did-finish-load', () => {     //  Ensures chat is open --functional--, attempts to theatre-mode stream --nonfunctional--
           let code = `
                       var streamButtons = document.getElementsByClassName('ScCoreButton-sc-1qn4ixc-0 cgCHoV ScButtonIcon-sc-o7ndmn-0 kwoFXD')
                       console.log(streamButtons)
@@ -83,6 +83,8 @@ function twitchWindow() {
 }
 
 function createBroadcastsWindow() {
+  var psb_ID = powerSaveBlocker.start('prevent-display-sleep')
+  console.log(psb_ID)
   targetDisplay = getTargetDisplay()
   const url = "https://www.twitch.tv/" + streamer + "/videos?filter=archives&sort=time"
   console.log(url)
@@ -104,23 +106,13 @@ function createBroadcastsWindow() {
     broadcastsWindow.show()
     broadcastsWindow.webContents.setZoomFactor(2.4)
   })
+
+  broadcastsWindow.addListener('closed', () => {
+    powerSaveBlocker.stop(psb_ID)
+  })
 }
 
-function getTargetDisplay() {
-  const displays = screen.getAllDisplays()
-
-  for(var i = 0; i < displays.length; i++) {
-    if (displayID == displays[i].id) {
-      return displays[i];
-    }
-  }
-
-  var defaultDisplay = screen.getPrimaryDisplay()
-  displayID = defaultDisplay.id
-  return defaultDisplay
-}
-
-function createAuthWindow(preload) {
+function createAuthWindow(preload) {        //  Largely taken from Oauth2.0 docs, slightly modified for simplicity, admittedly less secure
   console.log("Generating new security token...")
   authWin = new BrowserWindow({
     width: 1000,
@@ -150,8 +142,8 @@ function createAuthWindow(preload) {
       validationTime = new Date()
       settings.updateValidationTime(validationTime)
 
-      createAppWindow()
-        
+      createAppWindow()                             //  Secondary App window start because browser windows are asynchronous.
+                                                    //  I don't know how to wait for the authentication to finish so I branched the App start
       return authWin.close()
   });
 
@@ -267,6 +259,21 @@ function createAppWindow() {
 
 }
 
+function getTargetDisplay() {             //  Ensures the preferred display is available, otherwise returns the main display
+  const displays = screen.getAllDisplays()
+
+  for(var i = 0; i < displays.length; i++) {
+    if (displayID == displays[i].id) {
+      return displays[i];
+    }
+  }
+
+  var defaultDisplay = screen.getPrimaryDisplay()
+  displayID = defaultDisplay.id
+  return defaultDisplay
+}
+
+//  Begin various communication channels between main program and browser windows. Mostly accessing and editing global variables
 ipcMain.on('stream-found', () => {
   console.log("Stream detected! Opening...")
   twitchWindow()
