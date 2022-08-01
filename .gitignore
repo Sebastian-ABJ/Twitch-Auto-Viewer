@@ -103,10 +103,5 @@ dist
 # TernJS port file
 .tern-port
 
-<<<<<<< HEAD
 # Full apps
 out/twitch-auto-viewer-darwin-arm64/twitch-auto-viewer.app
-=======
-# Full app versions
-.out/twitch-auto-viewer-darwin-arm64/
->>>>>>> refs/remotes/origin/main
