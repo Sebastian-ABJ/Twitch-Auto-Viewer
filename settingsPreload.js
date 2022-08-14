@@ -7,6 +7,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     var speedDropDown = document.getElementById('speed-dropdown')
     var displayDropdown = document.getElementById('displays-dropdown')
     var displays = await ipcRenderer.invoke('requesting-displays')
+    var displayID = await ipcRenderer.invoke('requesting-selected-display')
 
     const replaceText = (selector, text) => {
       const element = document.getElementById(selector)
@@ -27,6 +28,13 @@ window.addEventListener('DOMContentLoaded', async () => {
       option.text = width + " x " + height
       option.value = display.id
       displayDropdown.add(option)
+    }
+
+    for(var i = 0; i < displayDropdown.length; i++) {
+      if (displayID == displayDropdown[i].value) {
+        displayDropdown[i].selected = true;
+        return;
+      }
     }
 })
 
