@@ -105,4 +105,5 @@ dist
 
 # Full apps
 out/twitch-auto-viewer-darwin-arm64/twitch-auto-viewer.app
+out/make/zip/darwin/arm64/twitch-auto-viewer.app
 out/twitch-auto-viewer-win32-x64
