@@ -36,10 +36,14 @@ async function streamLoop() {
     while(streamFound == false && loopCancel == false) {
         if(tokenExceedsValidationTime(validationTime)) {
             console.log("Token exceeds validation time.")
+            updateLog("Time since last token validation longer than an hour.")
+            updateLog("Validating token...")
             if(await ipcRenderer.invoke('validate-token')) {
                 console.log("Token valid, requesting new time.")
                 validationTime = await ipcRenderer.invoke('requesting-validationTime')
+                updateLog("Token validated successfully.")
             } else {
+                updateLog("Token invalid, requesting new token...")
                 ipcRenderer.send('requesting-new-token')
                 pauseApp()
                 break
@@ -51,7 +55,7 @@ async function streamLoop() {
             console.log(streamFound)
             ipcRenderer.send('stream-found')
         } else {
-            updateLog("Streamer not live.")
+            updateLog("Streamer offline.")
         }
 
         var time                            //  Speed intervals from ASAP to Slow, not very precise for some reason
