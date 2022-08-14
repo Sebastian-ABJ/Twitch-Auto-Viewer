@@ -9,33 +9,49 @@ var speed
 var displayID
 var clientID
 
+var appWin = null
+
 if (require('electron-squirrel-startup')) return app.quit();    //  Prevents startup before installation on Windows
 
-app.whenReady().then(async() => {
-    settings.init()                                 //  Gets relevant settings or creates default ones if none exist
-    var retrievedSettings = settings.getSettings()  
+const instanceLock = app.requestSingleInstanceLock()
+    
+if (!instanceLock) {
+  app.quit()
+} else {
+  app.on('second-instance', (event, commandLine, workingDirectory) => {
+    if (appWin) {
+      if (appWin.isMinimized()) appWin.restore()
+      appWin.focus()
+    }
+  })
 
-    token = retrievedSettings.token
-    streamer = retrievedSettings.streamer
-    speed = retrievedSettings.speed
-    speedVal = retrievedSettings.speedVal
-    clientID = retrievedSettings.client_ID
+  app.whenReady().then(async() => {
+      settings.init()                                 //  Gets relevant settings or creates default ones if none exist
+      var retrievedSettings = settings.getSettings()  
 
-    await verifyToken(token)          //  Gets access token and validates it. Authenticates user to create new one if none exist
-    .then(async response => {         //  Starts up app when valid token is retrieved
-        if (response.returnVal == 401) {
-          createAuthWindow()
-        } else {
-          validationTime = response.validationTime
-          console.log("Token validated at: " + validationTime)
-          settings.updateValidationTime(validationTime)
-          createAppWindow()                             //  If token is valid, the invalid token branch will open via the AuthWindow
-        }
-    })
-})
+      token = retrievedSettings.token
+      streamer = retrievedSettings.streamer
+      speed = retrievedSettings.speed
+      speedVal = retrievedSettings.speedVal
+      clientID = retrievedSettings.client_ID
+      displayID = retrievedSettings.display_ID
+
+      await verifyToken(token)          //  Gets access token and validates it. Authenticates user to create new one if none exist
+      .then(async response => {         //  Starts up app when valid token is retrieved
+          if (response.returnVal == 401) {
+            createAuthWindow()
+          } else {
+            validationTime = response.validationTime
+            console.log("Token validated at: " + validationTime)
+            settings.updateValidationTime(validationTime)
+            createAppWindow()                             //  If token is valid, the invalid token branch will open via the AuthWindow
+          }
+      })
+  })
+}
 
 app.on('window-all-closed', () => {               //  Keeps app from lingering on MacOS when all windows are closed
-    if (process.platform == 'darwin') app.quit()
+    app.quit()
 })
 
 function twitchWindow() {
@@ -159,7 +175,7 @@ function createAuthWindow(preload) {        //  Largely taken from Oauth2.0 docs
 }
 
 function createAppWindow() {
-  const appWin = new BrowserWindow({
+  appWin = new BrowserWindow({
     width: 800,
     height: 400,
     resizable: false,
@@ -299,6 +315,11 @@ ipcMain.handle("requesting-speed", async () => {
 ipcMain.handle('requesting-speedVal', async () => {
   console.log("Sending " + speedVal + " to renderer.")
   return speedVal
+})
+
+ipcMain.handle('requesting-selected-display', async () => {
+  console.log("Sending selected display " + displayID + " to renderer.")
+  return displayID
 })
 
 ipcMain.handle('requesting-token', async() => {
