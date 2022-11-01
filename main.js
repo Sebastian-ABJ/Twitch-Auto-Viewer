@@ -1,4 +1,4 @@
-const { app, BrowserWindow, screen, ipcMain, powerSaveBlocker } = require('electron')
+const { app, BrowserWindow, screen, ipcMain, powerSaveBlocker, session } = require('electron')
 const verifyToken = require('./verify-token')
 const settings = require('./settings.js')
 const path = require('path')
@@ -26,27 +26,31 @@ if (!instanceLock) {
   })
 
   app.whenReady().then(async() => {
-      settings.init()                                 //  Gets relevant settings or creates default ones if none exist
-      var retrievedSettings = settings.getSettings()  
+    await session.defaultSession.loadExtension(
+      path.join(__dirname, 'ext/ajopnjidmegmdimjlfnijceegpefgped/7.4.40_0')
+    )
+  
+    settings.init()                                 //  Gets relevant settings or creates default ones if none exist
+    var retrievedSettings = settings.getSettings()  
 
-      token = retrievedSettings.token
-      streamer = retrievedSettings.streamer
-      speed = retrievedSettings.speed
-      speedVal = retrievedSettings.speedVal
-      clientID = retrievedSettings.client_ID
-      displayID = retrievedSettings.display_ID
+    token = retrievedSettings.token
+    streamer = retrievedSettings.streamer
+    speed = retrievedSettings.speed
+    speedVal = retrievedSettings.speedVal
+    clientID = retrievedSettings.client_ID
+    displayID = retrievedSettings.display_ID
 
-      await verifyToken(token)          //  Gets access token and validates it. Authenticates user to create new one if none exist
-      .then(async response => {         //  Starts up app when valid token is retrieved
-          if (response.returnVal == 401) {
-            createAuthWindow()
-          } else {
-            validationTime = response.validationTime
-            console.log("Token validated at: " + validationTime)
-            settings.updateValidationTime(validationTime)
-            createAppWindow()                             //  If token is valid, the invalid token branch will open via the AuthWindow
-          }
-      })
+    await verifyToken(token)          //  Gets access token and validates it. Authenticates user to create new one if none exist
+    .then(async response => {         //  Starts up app when valid token is retrieved
+        if (response.returnVal == 401) {
+          createAuthWindow()
+        } else {
+          validationTime = response.validationTime
+          console.log("Token validated at: " + validationTime)
+          settings.updateValidationTime(validationTime)
+          createAppWindow()                             //  If token is valid, the invalid token branch will open via the AuthWindow
+        }
+    })
   })
 }
 
