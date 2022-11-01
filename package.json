@@ -25,6 +25,14 @@
     "electron": "^18.2.3",
     "node-fetch": "^2.6.7"
   },
+  "overrides": {
+    "electron": {
+      "got": "11.8.5"
+    },
+    "@electron-forge/cli": {
+      "minimatch": "3.0.5"
+    }
+  },
   "config": {
     "forge": {
       "packagerConfig": {
