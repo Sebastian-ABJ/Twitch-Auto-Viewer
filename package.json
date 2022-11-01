@@ -27,7 +27,11 @@
   },
   "config": {
     "forge": {
-      "packagerConfig": {},
+      "packagerConfig": {
+        "extraResource": [
+          "./ext"
+        ]
+      },
       "makers": [
         {
           "name": "@electron-forge/maker-squirrel",
