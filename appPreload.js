@@ -13,7 +13,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
 
     replaceText('status', 
-      "Monitoring " + streamer + " on a " + speed + " interval.")
+      "[ Monitoring " + streamer + " on a " + speed + " interval. ]")
 
     d = new Date()
     logBox.value += d.toLocaleTimeString() + ": Successfully validated token: " + token

@@ -1,3 +1,5 @@
+//  Could probably be inside actions file but I'm lazy and this works
+
 const fetch = require('node-fetch')
 
 async function checkStream(token, clientID, streamer) {

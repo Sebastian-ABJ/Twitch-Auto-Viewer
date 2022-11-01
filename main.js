@@ -1,4 +1,4 @@
-const { app, BrowserWindow, screen, ipcMain } = require('electron')
+const { app, BrowserWindow, screen, ipcMain, powerSaveBlocker } = require('electron')
 const verifyToken = require('./verify-token')
 const settings = require('./settings.js')
 const path = require('path')
@@ -6,49 +6,65 @@ var token
 var validationTime
 var streamer
 var speed
-var speedVal
+var displayID
 var clientID
 
-app.whenReady().then(async() => {
-    settings.init()
+var appWin = null
 
-    var retrievedSettings = settings.getSettings()
-    token = retrievedSettings.token
-    streamer = retrievedSettings.streamer
-    speed = retrievedSettings.speed
-    speedVal = retrievedSettings.speedVal
-    clientID = retrievedSettings.client_ID
+if (require('electron-squirrel-startup')) return app.quit();    //  Prevents startup before installation on Windows
 
-    await verifyToken(token)
-    .then(async response => {
-        if (response.returnVal == 401) {
-          createAuthWindow()
-        } else {
-          validationTime = response.validationTime
-          console.log("Token validated at: " + validationTime)
-          settings.updateValidationTime(validationTime)
-          createAppWindow()
-        }
-    })
-})
+const instanceLock = app.requestSingleInstanceLock()
+    
+if (!instanceLock) {
+  app.quit()
+} else {
+  app.on('second-instance', (event, commandLine, workingDirectory) => {
+    if (appWin) {
+      if (appWin.isMinimized()) appWin.restore()
+      appWin.focus()
+    }
+  })
 
-app.on('window-all-closed', () => {
-    if (process.platform !== 'darwin') app.quit()
+  app.whenReady().then(async() => {
+      settings.init()                                 //  Gets relevant settings or creates default ones if none exist
+      var retrievedSettings = settings.getSettings()  
+
+      token = retrievedSettings.token
+      streamer = retrievedSettings.streamer
+      speed = retrievedSettings.speed
+      speedVal = retrievedSettings.speedVal
+      clientID = retrievedSettings.client_ID
+      displayID = retrievedSettings.display_ID
+
+      await verifyToken(token)          //  Gets access token and validates it. Authenticates user to create new one if none exist
+      .then(async response => {         //  Starts up app when valid token is retrieved
+          if (response.returnVal == 401) {
+            createAuthWindow()
+          } else {
+            validationTime = response.validationTime
+            console.log("Token validated at: " + validationTime)
+            settings.updateValidationTime(validationTime)
+            createAppWindow()                             //  If token is valid, the invalid token branch will open via the AuthWindow
+          }
+      })
+  })
+}
+
+app.on('window-all-closed', () => {               //  Keeps app from lingering on MacOS when all windows are closed
+    app.quit()
 })
 
 function twitchWindow() {
-  const displays = screen.getAllDisplays();
-  const externalDisplay = displays.find(
-  display => display.bounds.x !== 0 || display.bounds.y !== 0)
+  targetDisplay = getTargetDisplay()
   const url = "https://www.twitch.tv/" + streamer
   console.log(url)
   
   const twitchWin = new BrowserWindow({
-    width: 1920,
-    height: 1080,
+    width: 1280,
+    height: 720,
     show:false,
-    x: externalDisplay.bounds.x,
-    y: externalDisplay.bounds.y,
+    x: targetDisplay.bounds.x,
+    y: targetDisplay.bounds.y,
     fullscreen: true,
     webPreferences: {
       nodeIntegration:true,
@@ -60,7 +76,7 @@ function twitchWindow() {
   twitchWin.once('ready-to-show', () => {
     twitchWin.show()
     twitchWin.webContents.setZoomFactor(2.4)
-    twitchWin.webContents.on('did-finish-load', () => {
+    twitchWin.webContents.on('did-finish-load', () => {     //  Ensures chat is open --functional--, attempts to theatre-mode stream --nonfunctional--
           let code = `
                       var streamButtons = document.getElementsByClassName('ScCoreButton-sc-1qn4ixc-0 cgCHoV ScButtonIcon-sc-o7ndmn-0 kwoFXD')
                       console.log(streamButtons)
@@ -82,7 +98,37 @@ function twitchWindow() {
   })
 }
 
-function createAuthWindow(preload) {
+function createBroadcastsWindow() {
+  var psb_ID = powerSaveBlocker.start('prevent-display-sleep')
+  console.log(psb_ID)
+  targetDisplay = getTargetDisplay()
+  const url = "https://www.twitch.tv/" + streamer + "/videos?filter=archives&sort=time"
+  console.log(url)
+  
+  const broadcastsWindow = new BrowserWindow({
+    width: 1280,
+    height: 720,
+    show:false,
+    x: targetDisplay.bounds.x,
+    y: targetDisplay.bounds.y,
+    fullscreen: true,
+    webPreferences: {
+      nodeIntegration:true,
+      contextIsolation: false
+    }
+  })
+  broadcastsWindow.loadURL(url)
+  broadcastsWindow.once('ready-to-show', () => {
+    broadcastsWindow.show()
+    broadcastsWindow.webContents.setZoomFactor(2.4)
+  })
+
+  broadcastsWindow.addListener('closed', () => {
+    powerSaveBlocker.stop(psb_ID)
+  })
+}
+
+function createAuthWindow(preload) {        //  Largely taken from Oauth2.0 docs, slightly modified for simplicity, admittedly less secure
   console.log("Generating new security token...")
   authWin = new BrowserWindow({
     width: 1000,
@@ -112,8 +158,8 @@ function createAuthWindow(preload) {
       validationTime = new Date()
       settings.updateValidationTime(validationTime)
 
-      createAppWindow()
-        
+      createAppWindow()                             //  Secondary App window start because browser windows are asynchronous.
+                                                    //  I don't know how to wait for the authentication to finish so I branched the App start
       return authWin.close()
   });
 
@@ -129,7 +175,7 @@ function createAuthWindow(preload) {
 }
 
 function createAppWindow() {
-  const appWin = new BrowserWindow({
+  appWin = new BrowserWindow({
     width: 800,
     height: 400,
     resizable: false,
@@ -199,10 +245,11 @@ function createAppWindow() {
       parent: appWin,
       modal: true,
     })
+    //settingsWin.webContents.openDevTools()
     settingsWin.removeMenu()
     settingsWin.loadFile('settings.html')
 
-    ipcMain.on('update-streamer-speedVal', (event, newStreamer, newSpeed, newSpeedVal) => {
+    ipcMain.on('update-streamer-speedVal-display', (event, newStreamer, newSpeed, newSpeedVal, newDisplay) => {
       if(streamer != newStreamer) {
         console.log("Changed streamer from " + streamer + " to " + newStreamer)
         streamer = newStreamer
@@ -213,8 +260,12 @@ function createAppWindow() {
         speed = newSpeed
         speedVal = newSpeedVal
       }
+      if(displayID != newDisplay) {
+        console.log("Changing display from " + displayID + " to " + newDisplay)
+        displayID = newDisplay
+      }
       console.log("Updating saved settings.")
-      settings.update(streamer, speed, speedVal)
+      settings.update(streamer, speed, speedVal, displayID)
 
       appWin.webContents.send('updated-settings', streamer, speed)
 
@@ -224,9 +275,31 @@ function createAppWindow() {
 
 }
 
+function getTargetDisplay() {             //  Ensures the preferred display is available, otherwise returns the main display
+  const displays = screen.getAllDisplays()
+
+  for(var i = 0; i < displays.length; i++) {
+    if (displayID == displays[i].id) {
+      return displays[i];
+    }
+  }
+
+  var defaultDisplay = screen.getPrimaryDisplay()
+  displayID = defaultDisplay.id
+  return defaultDisplay
+}
+
+//  Begin various communication channels between main program and browser windows. Mostly accessing and editing global variables
 ipcMain.on('stream-found', () => {
   console.log("Stream detected! Opening...")
   twitchWindow()
+})
+
+ipcMain.on('open-broadcasts', () => {
+  if(streamer != "") {
+    console.log("Opening past broadcasts...")
+    createBroadcastsWindow()
+  }
 })
 
 ipcMain.handle('requesting-streamer', async () => {
@@ -242,6 +315,11 @@ ipcMain.handle("requesting-speed", async () => {
 ipcMain.handle('requesting-speedVal', async () => {
   console.log("Sending " + speedVal + " to renderer.")
   return speedVal
+})
+
+ipcMain.handle('requesting-selected-display', async () => {
+  console.log("Sending selected display " + displayID + " to renderer.")
+  return displayID
 })
 
 ipcMain.handle('requesting-token', async() => {
@@ -275,6 +353,20 @@ ipcMain.handle('requesting-validationTime', async () => {
 ipcMain.handle('requesting-clientID', async() => {
   console.log("Sending " + clientID + " to renderer.")
   return clientID
+})
+
+ipcMain.handle('requesting-displays', async() => {
+  console.log("Sending displays to renderer")
+  var displays = screen.getAllDisplays()
+  console.log(displays)
+  return displays
+})
+
+ipcMain.handle('requesting-primary-display', async() => {
+  console.log("Sending displays to renderer")
+  var display = screen.getPrimaryDisplay()
+  console.log(display)
+  return display.id
 })
 
 ipcMain.on('update-token', (event, newToken) => {
