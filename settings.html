@@ -9,23 +9,32 @@
   </head>
   <body>
     <div id="settings">
-    <label class="label" for="streamer-variable">Streamer:</label>
-    <textarea class="text-area" id="streamer-variable" name="streamer-variable" maxlength="25" rows="1" autofocus></textarea>
-    <label class="label" for="speed-dropdown">Frequency:</label>
-    <select name="speed-dropdown" id="speed-dropdown">
-      <option value="1">ASAP</option>
-      <option value="2">Fast</option>
-      <option value="3">Normal</option>
-      <option value="4">Slow</option>
-    </select>
-    <br>
-    <label class = "label" for="displays-dropdown">Target display:</label>
-    <select name="displays-dropdown" id="displays-dropdown">
+      <label class="label" for="streamer-variable">Streamer:
+        <textarea class="text-area" id="streamer-variable" name="streamer-variable" maxlength="25" rows="1" autofocus></textarea>
+      </label>
+      <label class="label" for="speed-dropdown">Frequency:
+        <select name="speed-dropdown" id="speed-dropdown">
+          <option value="1">ASAP</option>
+          <option value="2">Fast</option>
+          <option value="3">Normal</option>
+          <option value="4">Slow</option>
+        </select>
+      </label>
+      <br>
+      <label class = "label" for="displays-dropdown">Target display:
+        <select name="displays-dropdown" id="displays-dropdown">
 
-    </select>
-    <br>
-    <br>
-    <p id="update-button" class="button">Submit</p>
+        </select>
+      </label>
+      </select>
+      <label for="checkbox" class="label" id="betterttv-label">BetterTTV Support:
+        <input type="checkbox" id="betterttv-checkbox" name="betterttv-checkbox" checked>
+      </label> 
+      <hr>
+      <br>
+      <div id="update-button-container">
+        <p id="update-button" class="button">Submit</p>
+      </div>
     </div>
     <script src="settings-actions.js"></script>
   </body>
