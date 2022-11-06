@@ -17,6 +17,22 @@ body {
     font-family: Arial, Helvetica, sans-serif;
     color: #EDF2F4;
     font-size: 28px;
+    display: inline;
+    margin-right: 5%;
+    letter-spacing: 1px;
+}
+
+select {
+    font-family: Arial, Helvetica, sans-serif;
+    background-color: #344966;
+    color: #EDF2F4;
+    vertical-align: middle;
+    transform: scale(1.1);
+    font-weight: bold;
+    border: #EDF2F4;
+    border-style: solid;
+    border-width: 2px;
+    border-radius: 3px;
 }
 
 .text-area {
@@ -26,6 +42,7 @@ body {
     resize: none;
     background-color: slategray;
     color: #EDF2F4;
+    width: 125px
 }
 
 .button {
@@ -33,7 +50,7 @@ body {
     cursor:pointer;
 }
 #settings {
-    text-align: left;
+    text-align: center;
 }
 
 #status {
@@ -51,12 +68,27 @@ body {
     resize: none;
 }
 
+#betterttv-label {
+    display: inline-block;
+}
+
+#betterttv-checkbox {
+    transform: scale(1.75);
+    vertical-align: middle;
+}
+
+#update-button-container {
+    display: block;
+    text-align: center;
+}
+
 p.button {
     font-family: Arial, Helvetica, sans-serif;
     color: #EDF2F4;
     font-size: 28px;
     background-color: darkslategrey;
-    border: 1px solid #EDF2F4;
+    border: 2px solid #EDF2F4;
+    border-radius: 15px;
     padding: 10px 20px;
     margin: 5px 10px;
     display: inline-block;

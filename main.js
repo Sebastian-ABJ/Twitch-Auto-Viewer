@@ -243,7 +243,7 @@ function createAppWindow() {
         preload: path.join(__dirname, 'settingsPreload.js')
       },
       width: 720,
-      height: 200,
+      height: 240,
       x: appX + 40,
       y: appY + 50,
       parent: appWin,
