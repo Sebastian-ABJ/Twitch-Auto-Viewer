@@ -1,4 +1,4 @@
-const { app, BrowserWindow, screen, ipcMain, powerSaveBlocker, session, dialog } = require('electron')
+const { app, BrowserWindow, screen, ipc, ipcMain, powerSaveBlocker, session, dialog } = require('electron')
 const verifyToken = require('./verify-token')
 const settings = require('./settings.js')
 const path = require('path')
@@ -209,7 +209,7 @@ function createAppWindow() {
     settingsWin.removeMenu()
     settingsWin.loadFile('settings.html')
 
-    ipcMain.on('update-streamer-speedVal-display', (event, newStreamer, newSpeed, newSpeedVal, newDisplay, newBetterTTV) => {
+    ipcMain.once('update-streamer-speedVal-display', (event, newStreamer, newSpeed, newSpeedVal, newDisplay, newBetterTTV) => {
       if(streamer != newStreamer) {
         console.log("Changed streamer from " + streamer + " to " + newStreamer)
         streamer = newStreamer
@@ -235,7 +235,7 @@ function createAppWindow() {
         console.log("Changing BetterTTV integration from '" + betterTTV + "' to '" + newBetterTTV + "'")
         betterTTV = newBetterTTV
       }
-      console.log("Updating saved settings.")
+      console.log("Updating saved settings...")
       settings.update(streamer, speed, speedVal, displayID, betterTTV)
 
       appWin.webContents.send('updated-settings', streamer, speed)
@@ -243,7 +243,6 @@ function createAppWindow() {
       settingsWin.close()
     })
   })
-
 }
 
 function twitchWindow() {
@@ -457,7 +456,6 @@ ipcMain.handle('requesting-clientID', async() => {
 ipcMain.handle('requesting-displays', async() => {
   console.log("Sending displays to renderer")
   var displays = screen.getAllDisplays()
-  console.log(displays)
   return displays
 })
 
