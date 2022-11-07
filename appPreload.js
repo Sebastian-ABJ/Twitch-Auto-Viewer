@@ -12,8 +12,13 @@ window.addEventListener('DOMContentLoaded', async () => {
       if (element) element.innerText = text
     }
 
-    replaceText('status', 
-      "[ Monitoring " + streamer + " on a " + speed + " interval. ]")
+    if(streamer == "Nobody") {
+      replaceText('status',
+      "Open the settings to choose a Twitch channel to monitor.")
+    } else {
+      replaceText('status', 
+        "Monitoring " + streamer)
+    }
 
     d = new Date()
     logBox.value += d.toLocaleTimeString() + ": Successfully validated token: " + token

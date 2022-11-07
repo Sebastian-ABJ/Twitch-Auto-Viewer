@@ -157,7 +157,6 @@ ipcRenderer.on('new-token-sent', async () => {              //  Retrieves update
 
 ipcRenderer.on('updated-settings', (event, streamer, speed) => {       //   Updates status text when new settings are applied
     statusElement = document.getElementById('status')
-    statusText = statusElement.innerText = 
-        "Monitoring " + streamer + " on a " + speed + " interval."
+    statusText = statusElement.innerText = "Monitoring " + streamer
     updateLog("Settings updated.")
 })

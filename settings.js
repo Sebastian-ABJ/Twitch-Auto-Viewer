@@ -9,9 +9,9 @@ function init() {
   if (!fs.existsSync(userDataPath)) {
     console.log("No settings found, initializing to defaults...")
     settingsJSON = {
-      "streamer": "None",
-      "speed": "ASAP",
-      "speedVal": "1",
+      "streamer": "Nobody",
+      "speed": "Normal",
+      "speedVal": "3",
       "token":"",
       "validation_time": "",
       "display_ID": "",

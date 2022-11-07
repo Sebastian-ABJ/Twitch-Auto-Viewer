@@ -16,12 +16,16 @@ window.addEventListener('DOMContentLoaded', async () => {
       if (element) element.innerText = text
     }
 
-    replaceText('streamer-variable', streamer)
+    if(streamer == "Nobody") {
+      replaceText('streamer-variable', '')
+    } else {
+      replaceText('streamer-variable', streamer)
+    }
 
     if(betterTTV == "false") {
       betterTTVCheckBox.checked = false
     }
-    
+
     speedDropDown.value=speedVal
 
     displays.forEach(addDisplays)
