@@ -4,8 +4,10 @@ window.addEventListener('DOMContentLoaded', async () => {
     var streamer = await ipcRenderer.invoke('requesting-streamer')
     var speedVal = await ipcRenderer.invoke('requesting-speedVal')
     var speed = await ipcRenderer.invoke('requesting-speed')
+    var betterTTV = await ipcRenderer.invoke('requesting-betterTTV')
     var speedDropDown = document.getElementById('speed-dropdown')
     var displayDropdown = document.getElementById('displays-dropdown')
+    var betterTTVCheckBox = document.getElementById('betterttv-checkbox')
     var displays = await ipcRenderer.invoke('requesting-displays')
     var displayID = await ipcRenderer.invoke('requesting-selected-display')
 
@@ -15,6 +17,11 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
 
     replaceText('streamer-variable', streamer)
+
+    if(betterTTV == "false") {
+      betterTTVCheckBox.checked = false
+    }
+    
     speedDropDown.value=speedVal
 
     displays.forEach(addDisplays)

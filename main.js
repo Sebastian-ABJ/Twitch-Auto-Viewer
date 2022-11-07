@@ -1,4 +1,4 @@
-const { app, BrowserWindow, screen, ipcMain, powerSaveBlocker, session } = require('electron')
+const { app, BrowserWindow, screen, ipcMain, powerSaveBlocker, session, dialog } = require('electron')
 const verifyToken = require('./verify-token')
 const settings = require('./settings.js')
 const path = require('path')
@@ -25,11 +25,7 @@ if (!instanceLock) {
     }
   })
 
-  app.whenReady().then(async() => {
-    await session.defaultSession.loadExtension(
-      path.join(__dirname, 'ext/ajopnjidmegmdimjlfnijceegpefgped/7.4.40_0')
-    )
-  
+  app.whenReady().then(async() => {  
     settings.init()                                 //  Gets relevant settings or creates default ones if none exist
     var retrievedSettings = settings.getSettings()  
 
@@ -39,6 +35,14 @@ if (!instanceLock) {
     speedVal = retrievedSettings.speedVal
     clientID = retrievedSettings.client_ID
     displayID = retrievedSettings.display_ID
+    betterTTV = retrievedSettings.betterttv_enabled
+
+    if(betterTTV == "true") {
+      await session.defaultSession.loadExtension(
+        path.join(__dirname, 'ext/ajopnjidmegmdimjlfnijceegpefgped/7.4.40_0')
+      )
+    }
+
 
     await verifyToken(token)          //  Gets access token and validates it. Authenticates user to create new one if none exist
     .then(async response => {         //  Starts up app when valid token is retrieved
@@ -79,7 +83,7 @@ function twitchWindow() {
   //twitchWin.webContents.openDevTools();
   twitchWin.once('ready-to-show', () => {
     twitchWin.show()
-    twitchWin.webContents.setZoomFactor(2.4)
+    twitchWin.webContents.setZoomFactor(2.0)
     twitchWin.webContents.on('did-finish-load', () => {     //  Ensures chat is open --functional--, attempts to theatre-mode stream --nonfunctional--
           let code = `
                       var streamButtons = document.getElementsByClassName('ScCoreButton-sc-1qn4ixc-0 cgCHoV ScButtonIcon-sc-o7ndmn-0 kwoFXD')
@@ -124,7 +128,7 @@ function createBroadcastsWindow() {
   broadcastsWindow.loadURL(url)
   broadcastsWindow.once('ready-to-show', () => {
     broadcastsWindow.show()
-    broadcastsWindow.webContents.setZoomFactor(2.4)
+    broadcastsWindow.webContents.setZoomFactor(2.0)
   })
 
   broadcastsWindow.addListener('closed', () => {
@@ -253,7 +257,7 @@ function createAppWindow() {
     settingsWin.removeMenu()
     settingsWin.loadFile('settings.html')
 
-    ipcMain.on('update-streamer-speedVal-display', (event, newStreamer, newSpeed, newSpeedVal, newDisplay) => {
+    ipcMain.on('update-streamer-speedVal-display', (event, newStreamer, newSpeed, newSpeedVal, newDisplay, newBetterTTV) => {
       if(streamer != newStreamer) {
         console.log("Changed streamer from " + streamer + " to " + newStreamer)
         streamer = newStreamer
@@ -268,8 +272,19 @@ function createAppWindow() {
         console.log("Changing display from " + displayID + " to " + newDisplay)
         displayID = newDisplay
       }
+      if(betterTTV != newBetterTTV) {
+        let messageStr = "Restart required to change BetterTTV integration!"
+        let typeStr = "warning"
+
+        dialog.showMessageBoxSync(settingsWin, { 
+          message: messageStr,
+          type: typeStr
+        })
+        console.log("Changing BetterTTV integration from '" + betterTTV + "' to '" + newBetterTTV + "'")
+        betterTTV = newBetterTTV
+      }
       console.log("Updating saved settings.")
-      settings.update(streamer, speed, speedVal, displayID)
+      settings.update(streamer, speed, speedVal, displayID, betterTTV)
 
       appWin.webContents.send('updated-settings', streamer, speed)
 
@@ -324,6 +339,11 @@ ipcMain.handle('requesting-speedVal', async () => {
 ipcMain.handle('requesting-selected-display', async () => {
   console.log("Sending selected display " + displayID + " to renderer.")
   return displayID
+})
+
+ipcMain.handle('requesting-betterTTV', async () => {
+  console.log("Sending BetterTTV preference of '" + betterTTV + "' to renderer.")
+  return betterTTV
 })
 
 ipcMain.handle('requesting-token', async() => {
