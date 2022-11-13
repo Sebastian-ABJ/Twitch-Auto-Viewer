@@ -4,7 +4,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     var streamer = await ipcRenderer.invoke('requesting-streamer')
     var token = await ipcRenderer.invoke('requesting-token')
     var validationTime = await ipcRenderer.invoke('requesting-validationTime')
-    var speed = await ipcRenderer.invoke('requesting-speed')
 
     var logBox = document.getElementById("log-box")
     const replaceText = (selector, text) => {

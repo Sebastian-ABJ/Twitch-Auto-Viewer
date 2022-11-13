@@ -121,7 +121,7 @@ function delay() {                              //  Modified wait function from 
 
 function tokenExceedsValidationTime(validationTime) {       //  Adheres to Twitch's hourly token validation policy
     var d = new Date()
-    if(d.getHours() > (validationTime.getHours() + 1)) {
+    if(d.getHours() > (validationTime.getHours())) {
         return true
     } else {
         return false

@@ -4,20 +4,24 @@
 const { ipcRenderer } = require('electron')
 
 let updateButton = document.getElementById("update-button");
-updateButton.addEventListener("click", update);
+let zoomSlider = document.getElementById("zoom-slider");
+let zoomLabel = document.getElementById("zoom-label")
+updateButton.addEventListener("click", updateSettings);
 
-function update() {
+
+function updateSettings() {
     var streamerElement = document.getElementById("streamer-variable")
-    var speedDropDown = document.getElementById("speed-dropdown")
     var displayDropdown = document.getElementById("displays-dropdown")
     var betterTTVCheckbox = document.getElementById("betterttv-checkbox")
-    var speedVal = speedDropDown.options[speedDropDown.selectedIndex].value
-    var speed = speedDropDown.options[speedDropDown.selectedIndex].innerText
+    var zoom = zoomSlider.value
     var displayID = displayDropdown.value
     var betterTTV = betterTTVCheckbox.checked.toString()
-    console.log(speedVal)
     streamer = streamerElement.value
-    console.log("Sending " + streamer + " to main.")
-    console.log("Sending " + speedVal + " to main.")
-    ipcRenderer.send("update-streamer-speedVal-display", streamer, speed, speedVal, displayID, betterTTV)
+    ipcRenderer.send("update-streamer-zoom-display", streamer, zoom, displayID, betterTTV)
+}
+
+// Refreshes label as slider moves
+zoomSlider.oninput = function() {
+    let value = parseFloat(this.value).toFixed(1);
+    zoomLabel.innerText = "Zoom Factor: " + value + "x";
 }

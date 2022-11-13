@@ -5,7 +5,7 @@ const path = require('path')
 var token
 var validationTime
 var streamer
-var speed
+var zoom
 var displayID
 var clientID
 
@@ -102,8 +102,7 @@ if (!instanceLock) {
 
     token = retrievedSettings.token
     streamer = retrievedSettings.streamer
-    speed = retrievedSettings.speed
-    speedVal = retrievedSettings.speedVal
+    zoom = retrievedSettings.zoom
     clientID = retrievedSettings.client_ID
     displayID = retrievedSettings.display_ID
     betterTTV = retrievedSettings.betterttv_enabled
@@ -198,7 +197,7 @@ function createAppWindow() {
         contextIsolation: false,
         preload: path.join(__dirname, 'settingsPreload.js')
       },
-      width: 720,
+      width: 735,
       height: 240,
       x: appX + 40,
       y: appY + 50,
@@ -209,16 +208,14 @@ function createAppWindow() {
     settingsWin.removeMenu()
     settingsWin.loadFile('settings.html')
 
-    ipcMain.once('update-streamer-speedVal-display', (event, newStreamer, newSpeed, newSpeedVal, newDisplay, newBetterTTV) => {
+    ipcMain.once('update-streamer-zoom-display', (event, newStreamer, newZoom, newDisplay, newBetterTTV) => {
       if(streamer != newStreamer) {
         console.log("Changed streamer from " + streamer + " to " + newStreamer)
         streamer = newStreamer
       }
-      if(speedVal != newSpeedVal) {
-        console.log("Changing speed from " + speed + " to " + newSpeed)
-        console.log("Changing speed value from " + speedVal + " to " + newSpeedVal)
-        speed = newSpeed
-        speedVal = newSpeedVal
+      if(zoom != newZoom) {
+        console.log("Changing zoom factor from " + zoom + " to " + newZoom)
+        zoom = newZoom
       }
       if(displayID != newDisplay) {
         console.log("Changing display from " + displayID + " to " + newDisplay)
@@ -236,9 +233,9 @@ function createAppWindow() {
         betterTTV = newBetterTTV
       }
       console.log("Updating saved settings...")
-      settings.update(streamer, speed, speedVal, displayID, betterTTV)
+      settings.update(streamer, zoom, displayID, betterTTV)
 
-      appWin.webContents.send('updated-settings', streamer, speed)
+      appWin.webContents.send('updated-settings', streamer, zoom)
 
       settingsWin.close()
     })
@@ -266,7 +263,7 @@ function twitchWindow() {
   //twitchWin.webContents.openDevTools();
   twitchWin.once('ready-to-show', () => {
     twitchWin.show()
-    twitchWin.webContents.setZoomFactor(2.0)
+    twitchWin.webContents.setZoomFactor(parseFloat(zoom))
     twitchWin.webContents.on('did-finish-load', () => {     //  Ensures chat is open --functional--, attempts to theatre-mode stream --nonfunctional--
           let code = `
                       var streamButtons = document.getElementsByClassName('ScCoreButton-sc-1qn4ixc-0 cgCHoV ScButtonIcon-sc-o7ndmn-0 kwoFXD')
@@ -311,7 +308,7 @@ function createBroadcastsWindow() {
   broadcastsWindow.loadURL(url)
   broadcastsWindow.once('ready-to-show', () => {
     broadcastsWindow.show()
-    broadcastsWindow.webContents.setZoomFactor(2.0)
+    broadcastsWindow.webContents.setZoomFactor(parseFloat(zoom))
   })
 
   broadcastsWindow.addListener('closed', () => {
@@ -400,14 +397,9 @@ ipcMain.handle('requesting-streamer', async () => {
   return streamer
 })
 
-ipcMain.handle("requesting-speed", async () => {
-  console.log("Sending " + speed + " to renderer.")
-  return speed
-})
-
-ipcMain.handle('requesting-speedVal', async () => {
-  console.log("Sending " + speedVal + " to renderer.")
-  return speedVal
+ipcMain.handle("requesting-zoom", async () => {
+  console.log("Sending " + zoom + " to renderer.")
+  return zoom
 })
 
 ipcMain.handle('requesting-selected-display', async () => {

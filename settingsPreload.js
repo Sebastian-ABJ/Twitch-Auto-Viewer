@@ -2,10 +2,12 @@ const { ipcRenderer } = require('electron')
 
 window.addEventListener('DOMContentLoaded', async () => {
     var streamer = await ipcRenderer.invoke('requesting-streamer')
-    var speedVal = await ipcRenderer.invoke('requesting-speedVal')
-    var speed = await ipcRenderer.invoke('requesting-speed')
     var betterTTV = await ipcRenderer.invoke('requesting-betterTTV')
-    var speedDropDown = document.getElementById('speed-dropdown')
+
+    var zoom = await ipcRenderer.invoke('requesting-zoom')
+    zoom = parseFloat(zoom).toFixed(1)
+
+    var zoomSlider = document.getElementById('zoom-slider')
     var displayDropdown = document.getElementById('displays-dropdown')
     var betterTTVCheckBox = document.getElementById('betterttv-checkbox')
     var displays = await ipcRenderer.invoke('requesting-displays')
@@ -26,8 +28,6 @@ window.addEventListener('DOMContentLoaded', async () => {
       betterTTVCheckBox.checked = false
     }
 
-    speedDropDown.value=speedVal
-
     displays.forEach(addDisplays)
     
     function addDisplays(display) {
@@ -44,9 +44,12 @@ window.addEventListener('DOMContentLoaded', async () => {
     for(var i = 0; i < displayDropdown.length; i++) {
       if (displayID == displayDropdown[i].value) {
         displayDropdown[i].selected = true;
-        return;
+        break;
       }
     }
+
+    replaceText('zoom-label', "Zoom Factor: " + zoom + "x")
+    zoomSlider.value=zoom;
 })
 
   

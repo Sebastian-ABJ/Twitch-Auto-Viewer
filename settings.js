@@ -10,8 +10,7 @@ function init() {
     console.log("No settings found, initializing to defaults...")
     settingsJSON = {
       "streamer": "Nobody",
-      "speed": "Normal",
-      "speedVal": "3",
+      "zoom": "1.0",
       "token":"",
       "validation_time": "",
       "display_ID": "",
@@ -26,11 +25,10 @@ function getSettings() {
   return settingsJSON = require (userDataPath)
 }
 
-function update(streamer, speed, speedVal, displayID, betterttv) {
+function update(streamer, zoom, displayID, betterttv) {
   var settingsJSON = require (userDataPath)
   settingsJSON.streamer = streamer
-  settingsJSON.speed = speed
-  settingsJSON.speedVal = speedVal
+  settingsJSON.zoom = zoom
   settingsJSON.display_ID = displayID
   settingsJSON.betterttv_enabled = betterttv
   fs.writeFileSync(userDataPath, JSON.stringify(settingsJSON, null, 4))
