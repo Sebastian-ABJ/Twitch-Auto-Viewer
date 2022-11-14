@@ -7,8 +7,10 @@
     <title>Settings</title>
     <link rel="stylesheet" href="styles.css">
   </head>
-  <body>
+  <body id="settings-body">
     <div id="settings">
+      <p class="settings-title">Settings</p>
+      <hr>
       <div class="settings-row">
         <div class="settings-container" id="streamer-container">
           <label class="label" for="streamer-variable">Streamer:</label>
@@ -34,9 +36,13 @@
         </div>
       </div>
       <hr>
-      <br>
-      <div id="update-button-container">
-        <p id="update-button" class="button">Submit</p>
+      <div id="buttons-container">
+        <div class="button-container" id="cancel-button-container">
+          <p id="cancel-button" class="settings-button">Cancel</p>
+        </div>
+        <div class="button-container" id="update-button-container">
+          <p id="update-button" class="settings-button">Save</p>
+        </div>
       </div>
     </div>
     <script src="settings-actions.js"></script>

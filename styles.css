@@ -1,5 +1,11 @@
-body {
+#app-body {
     background-color: #344966;
+    display: block;
+    text-align: center;
+}
+
+#settings-body {
+    background-color: #252e3b;
     display: block;
     text-align: center;
 }
@@ -13,10 +19,21 @@ body {
     text-decoration: underline;
 }
 
+.settings-title {
+    font-family: Arial, Helvetica, sans-serif;
+    margin: auto;
+    width: 50%;
+    text-align: center;
+    color: #EDF2F4;
+    font-size: 24px;
+    font-weight: bold;
+    letter-spacing: 1px;
+}
+
 .label {
     font-family: Arial, Helvetica, sans-serif;
     color: #EDF2F4;
-    font-size: 28px;
+    font-size: 20px;
     display: inline;
     letter-spacing: normal;
 }
@@ -55,10 +72,22 @@ select {
     width: 110px
 }
 
-.button {
+.settings-button {
     font-family: Arial, Helvetica, sans-serif;
-    cursor:pointer;
+    color: #EDF2F4;
+    font-size: 24px;
+    background-color: darkslategrey;
+    border: 2px solid #EDF2F4;
+    border-radius: 15px;
+    padding: 10px 20px;
+    margin: 5px 10px;
+    display: inline-block;
 }
+.settings-button:hover {
+    background-color:cadetblue;
+    cursor: pointer;
+}
+
 .settings {
     text-align: center;
     display: flexbox;
@@ -88,9 +117,9 @@ select {
     vertical-align: middle;
 }
 
-#update-button-container {
-    display: block;
-    text-align: center;
+.button-container {
+    display: inline;
+    margin: auto 10px;
 }
 
 p.button {

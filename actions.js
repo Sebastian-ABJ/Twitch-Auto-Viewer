@@ -27,7 +27,6 @@ async function streamLoop() {
     const client_id = await ipcRenderer.invoke('requesting-clientID')
     var streamer = await ipcRenderer.invoke('requesting-streamer')
     var validationTime = await ipcRenderer.invoke('requesting-validationTime')
-    var speedVal = parseInt(await ipcRenderer.invoke('requesting-speedVal'))
     checkStreamButton.disabled = false
     checkStreamButton.innerText="Stop"
 
@@ -58,17 +57,7 @@ async function streamLoop() {
             updateLog("Streamer offline.")
         }
 
-        var time                            //  Speed intervals from ASAP to Slow, not very precise for some reason
-        if(speedVal == "1") {               
-            time = 100          //  ~1/10 sec
-        } else if(speedVal == "2") {
-            time = 5000         //  ~5 sec
-        } else if(speedVal == "3") {
-            time = 54000        //  ~1 min
-        } else if(speedVal == "4") {
-            time = 270000       //  ~5 min
-        }
-        await wait(time)
+        await wait(5000) //in milliseconds
     }
     updateLog("Monitoring stopped.")
 }

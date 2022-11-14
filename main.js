@@ -1,4 +1,4 @@
-const { app, BrowserWindow, screen, ipc, ipcMain, powerSaveBlocker, session, dialog } = require('electron')
+const { app, BrowserWindow, screen, ipc, ipcMain, powerSaveBlocker, session, dialog, ipcRenderer } = require('electron')
 const verifyToken = require('./verify-token')
 const settings = require('./settings.js')
 const path = require('path')
@@ -146,6 +146,7 @@ function createAppWindow() {
     },
     show:false
   })
+  appWin.removeMenu();
   appWin.loadFile('index.html')
   //appWin.webContents.openDevTools();
   appWin.once('ready-to-show', () => {
@@ -197,15 +198,16 @@ function createAppWindow() {
         contextIsolation: false,
         preload: path.join(__dirname, 'settingsPreload.js')
       },
-      width: 735,
-      height: 240,
+      frame: false,
+      width: 720,
+      height: 210,
+      resizable: false,
       x: appX + 40,
       y: appY + 50,
       parent: appWin,
       modal: true,
     })
     //settingsWin.webContents.openDevTools()
-    settingsWin.removeMenu()
     settingsWin.loadFile('settings.html')
 
     ipcMain.once('update-streamer-zoom-display', (event, newStreamer, newZoom, newDisplay, newBetterTTV) => {
@@ -239,6 +241,11 @@ function createAppWindow() {
 
       settingsWin.close()
     })
+
+    ipcMain.once('close-window', () => {
+      ipcMain.removeAllListeners('update-streamer-zoom-display', () => {});
+      settingsWin.close();
+    }) 
   })
 }
 
