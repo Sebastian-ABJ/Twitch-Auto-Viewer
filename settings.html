@@ -7,43 +7,45 @@
     <title>Settings</title>
     <link rel="stylesheet" href="styles.css">
   </head>
-  <body id="settings-body">
-    <div id="settings">
-      <p class="settings-title">Settings</p>
-      <hr>
-      <div class="settings-row">
-        <div class="settings-container" id="streamer-container">
-          <label class="label" for="streamer-variable">Streamer:</label>
-          <textarea class="text-area" id="streamer-variable" name="streamer-variable" maxlength="25" rows="1" autofocus></textarea>
-        </div>
-        <div class="settings-container" id="zoom-slider-container">
-          <span class="label" id="zoom-label"></span>
-          <input type="range" min="1" max="2.5" step="0.1" class="slider" id="zoom-slider">
-        </div>
+  <body id="settings">
+      <div id="settings-header">
+        <p class="settings-title">Settings</p>
+        <hr>
       </div>
-      <div class="settings-row">
-        <div class="settings-container" id="displays-container">
-          <label class = "label" for="displays-dropdown">Target display:
-            <select name="displays-dropdown" id="displays-dropdown">
+      <div id="settings-body">
+        <div class="settings-row">
+          <div class="settings-container" id="streamer-container">
+            <label class="label" for="streamer-variable">Streamer: </label>
+            <textarea class="text-area" id="streamer-variable" name="streamer-variable" maxlength="25" rows="1" autofocus></textarea>
+          </div>
+          <div class="settings-container" id="zoom-slider-container">
+            <span class="label" id="zoom-label"></span>
+            <input type="range" min="1" max="2.5" step="0.1" class="slider" id="zoom-slider">
+          </div>
+        </div>
+        <div class="settings-row">
+          <div class="settings-container" id="displays-container">
+            <label class = "label" for="displays-dropdown">Target display:
+              <select name="displays-dropdown" id="displays-dropdown">
 
-            </select>
-          </label>
+              </select>
+            </label>
+          </div>
+          <div class="settings-container" id="betterttv-container">
+            <label for="checkbox" class="label" id="betterttv-label">BetterTTV Support:
+              <input type="checkbox" id="betterttv-checkbox" name="betterttv-checkbox" checked>
+            </label>
+          </div>
         </div>
-        <div class="settings-container" id="betterttv-container">
-          <label for="checkbox" class="label" id="betterttv-label">BetterTTV Support:
-            <input type="checkbox" id="betterttv-checkbox" name="betterttv-checkbox" checked>
-          </label>
+        <hr>
+        <div id="buttons-container">
+          <div class="button-container" id="cancel-button-container">
+            <p id="cancel-button" class="settings-button">Cancel</p>
+          </div>
+          <div class="button-container" id="update-button-container">
+            <p id="update-button" class="settings-button">Save</p>
+          </div>
         </div>
-      </div>
-      <hr>
-      <div id="buttons-container">
-        <div class="button-container" id="cancel-button-container">
-          <p id="cancel-button" class="settings-button">Cancel</p>
-        </div>
-        <div class="button-container" id="update-button-container">
-          <p id="update-button" class="settings-button">Save</p>
-        </div>
-      </div>
     </div>
     <script src="settings-actions.js"></script>
   </body>

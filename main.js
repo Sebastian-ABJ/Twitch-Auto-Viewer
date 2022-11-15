@@ -200,10 +200,10 @@ function createAppWindow() {
       },
       frame: false,
       width: 720,
-      height: 210,
+      height: 240,
       resizable: false,
       x: appX + 40,
-      y: appY + 50,
+      y: appY + 120,
       parent: appWin,
       modal: true,
     })
