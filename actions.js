@@ -3,6 +3,8 @@ const { ipcRenderer } = require('electron')
 
 var loopCancel = true
 
+var broadcastsOpen = false
+
 let updateButton = document.getElementById("settings-button");
 updateButton.addEventListener("click", openSettings);
 
@@ -10,7 +12,7 @@ let checkStreamButton = document.getElementById("check-stream-button")
 checkStreamButton.addEventListener("click", actionHandler)
 
 let broadcastsButton = document.getElementById("broadcasts-button")
-broadcastsButton.addEventListener("click", openBroadcasts)
+broadcastsButton.addEventListener("click", broadcastToggle)
 
 function actionHandler() {
     if(loopCancel) {
@@ -50,8 +52,13 @@ async function streamLoop() {
         }
         streamFound = await twitch.checkStream(token, client_id, streamer)
         if(streamFound) {
-            updateLog("STREAMER IS LIVE! Opening stream...")
+            updateLog("STREAMER IS LIVE!")
+            if(broadcastsOpen) {
+                broadcastToggle()
+            }
             console.log(streamFound)
+            updateLog("Opening livestream...")
+            stopLoop()
             ipcRenderer.send('stream-found')
         } else {
             updateLog("Streamer offline.")
@@ -78,10 +85,19 @@ function stopLoop() {
     }
 }
 
-function openBroadcasts() {
-    stopLoop()
-    ipcRenderer.send('open-broadcasts')
-
+function broadcastToggle() {
+    if (!broadcastsOpen) {
+        broadcastsOpen = true;
+        stopLoop()
+        ipcRenderer.send('open-broadcasts')
+        updateLog("Opening previous broadcasts...")
+        broadcastsButton.innerText = "Close Past Broadcasts"
+    } else {
+        broadcastsOpen = false;
+        ipcRenderer.send('close-broadcast-window')
+        updateLog("Closing broadcast window...")
+        broadcastsButton.innerText = "Open Past Broadcasts"
+    }
 }
 
 async function wait(time) {

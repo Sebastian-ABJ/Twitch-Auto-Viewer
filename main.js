@@ -318,7 +318,11 @@ function createBroadcastsWindow() {
     broadcastsWindow.webContents.setZoomFactor(parseFloat(zoom))
   })
 
-  broadcastsWindow.addListener('closed', () => {
+  ipcMain.once('close-broadcast-window', () => {
+      broadcastsWindow.close()
+  })
+
+  broadcastsWindow.once('close', () => {
     powerSaveBlocker.stop(psb_ID)
   })
 }
