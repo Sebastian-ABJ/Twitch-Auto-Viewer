@@ -200,7 +200,7 @@ function createAppWindow() {
       },
       frame: false,
       width: 720,
-      height: 240,
+      height: 255,
       resizable: false,
       x: appX + 40,
       y: appY + 120,
@@ -267,28 +267,21 @@ function twitchWindow() {
     }
   })
   twitchWin.loadURL(url)
-  //twitchWin.webContents.openDevTools();
+  twitchWin.webContents.openDevTools();
   twitchWin.once('ready-to-show', () => {
     twitchWin.show()
     twitchWin.webContents.setZoomFactor(parseFloat(zoom))
     twitchWin.webContents.on('did-finish-load', () => {     //  Ensures chat is open --functional--, attempts to theatre-mode stream --nonfunctional--
-          let code = `
-                      var streamButtons = document.getElementsByClassName('ScCoreButton-sc-1qn4ixc-0 cgCHoV ScButtonIcon-sc-o7ndmn-0 kwoFXD')
-                      console.log(streamButtons)
-                      for(button of streamButtons) {
-                          if(button.dataset.aTarget = "player-theatre-mode-button") {
-                              window.dispatchEvent(new KeyboardEvent('keydown', {
-                                  key: "t",
-                                  keyCode: 116,
-                                  altKey: true,
-                                }))
-                          } else if (button.ariaLabel = "Expand Chat") {
-                              console.log(button)
-                              button.click()
-                          }
-                      }
-                      `
-                      twitchWin.webContents.executeJavaScript(code)
+      let code = `
+        var buttons = document.getElementsByTagName('button')
+        for(button of buttons) {
+          if (button.ariaLabel === "Expand Chat") {
+              console.log(button)
+              button.click()
+          }
+        }
+      `
+      twitchWin.webContents.executeJavaScript(code)
       })
   })
 }
@@ -323,6 +316,7 @@ function createBroadcastsWindow() {
   })
 
   broadcastsWindow.once('close', () => {
+    appWin.webContents.send('broadcasts-closed')
     powerSaveBlocker.stop(psb_ID)
   })
 }
