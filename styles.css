@@ -2,6 +2,7 @@
     background-color: #252e3b;
     display: block;
     text-align: center;
+    cursor: default;
 }
 
 #settings {
@@ -10,6 +11,7 @@
     padding: 0px;
     display: block;
     text-align: center;
+    cursor: default;
 }
 
 #settings-header {
@@ -25,10 +27,8 @@
 .title {
     font-family: Arial, Helvetica, sans-serif;
     margin: auto;
-    width: 50%;
-    text-align: center;
+    text-align: left;
     color: #EDF2F4;
-    text-decoration: underline;
 }
 
 .settings-title {
@@ -53,11 +53,12 @@
 .settings-row {
     display: block;
     padding: 3px 0px;
+    margin: 2px 0px
 }
 
 .settings-container {
     display: inline-block;
-    margin-right: 35px;
+    margin: auto 20px
 }
 
 select {
@@ -70,6 +71,7 @@ select {
     border-style: solid;
     border-width: 2px;
     border-radius: 3px;
+    padding: 2px;
 }
 
 .text-area {
@@ -96,7 +98,6 @@ select {
 }
 .settings-button:hover {
     background-color: rgb(52, 64, 83);
-    cursor: pointer;
 }
 
 #status {
@@ -143,5 +144,4 @@ p.button {
 
 p.button:hover {
     background-color:rgb(55, 50, 97);
-    cursor: pointer;
 }

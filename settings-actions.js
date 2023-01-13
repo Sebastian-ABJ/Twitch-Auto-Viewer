@@ -6,7 +6,8 @@ const { ipcRenderer } = require('electron')
 let updateButton = document.getElementById("update-button");
 let cancelButton = document.getElementById("cancel-button");
 let zoomSlider = document.getElementById("zoom-slider");
-let zoomLabel = document.getElementById("zoom-label")
+let zoomLabel = document.getElementById("zoom-label");
+let archiveDropdown = document.getElementById("site-dropdown");
 updateButton.addEventListener("click", updateSettings);
 
 
@@ -17,8 +18,9 @@ function updateSettings() {
     var zoom = zoomSlider.value
     var displayID = displayDropdown.value
     var betterTTV = betterTTVCheckbox.checked.toString()
+    var archive = archiveDropdown.value
     streamer = streamerElement.value
-    ipcRenderer.send("update-streamer-zoom-display", streamer, zoom, displayID, betterTTV)
+    ipcRenderer.send("update-streamer-zoom-display", streamer, zoom, displayID, betterTTV, archive)
 }
 
 cancelButton.onclick = () => {

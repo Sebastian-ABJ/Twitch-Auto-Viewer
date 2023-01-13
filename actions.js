@@ -165,3 +165,9 @@ ipcRenderer.on('updated-settings', (event, streamer, speed) => {       //   Upda
     statusText = statusElement.innerText = "Monitoring " + streamer
     updateLog("Settings updated.")
 })
+
+ipcRenderer.on('broadcasts-closed', async () => {
+    broadcastsOpen = false;
+    updateLog("Closing broadcast window...")
+    broadcastsButton.innerText = "Open Past Broadcasts"
+})

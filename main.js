@@ -5,6 +5,7 @@ const path = require('path')
 var token
 var validationTime
 var streamer
+var archive
 var zoom
 var displayID
 var clientID
@@ -104,6 +105,7 @@ if (!instanceLock) {
     streamer = retrievedSettings.streamer
     zoom = retrievedSettings.zoom
     clientID = retrievedSettings.client_ID
+    archive = retrievedSettings.archive
     displayID = retrievedSettings.display_ID
     betterTTV = retrievedSettings.betterttv_enabled
 
@@ -210,7 +212,7 @@ function createAppWindow() {
     //settingsWin.webContents.openDevTools()
     settingsWin.loadFile('settings.html')
 
-    ipcMain.once('update-streamer-zoom-display', (event, newStreamer, newZoom, newDisplay, newBetterTTV) => {
+    ipcMain.once('update-streamer-zoom-display', (event, newStreamer, newZoom, newDisplay, newBetterTTV, newArchive) => {
       if(streamer != newStreamer) {
         console.log("Changed streamer from " + streamer + " to " + newStreamer)
         streamer = newStreamer
@@ -234,8 +236,12 @@ function createAppWindow() {
         console.log("Changing BetterTTV integration from '" + betterTTV + "' to '" + newBetterTTV + "'")
         betterTTV = newBetterTTV
       }
+      if(archive != newArchive) {
+        console.log("Changing archive from " + archive + " to " + newArchive)
+        archive = newArchive
+      }
       console.log("Updating saved settings...")
-      settings.update(streamer, zoom, displayID, betterTTV)
+      settings.update(streamer, zoom, displayID, betterTTV, archive)
 
       appWin.webContents.send('updated-settings', streamer, zoom)
 
@@ -290,7 +296,12 @@ function createBroadcastsWindow() {
   var psb_ID = powerSaveBlocker.start('prevent-display-sleep')
   console.log(psb_ID)
   targetDisplay = getTargetDisplay()
-  const url = "https://www.twitch.tv/" + streamer + "/videos?filter=archives&sort=time"
+  //const twitchURL = "https://www.twitch.tv/" + streamer + "/videos?filter=archives&sort=time"
+  //const youtubeURL = "https://www.youtube.com/results?search_query=" + streamer + "+stream+with+chat"
+
+  const url = archive == "Twitch" ? "https://www.twitch.tv/" + streamer + "/videos?filter=archives&sort=time" :
+                                    "https://www.youtube.com/results?search_query=" + streamer + "+stream+with+chat"
+
   console.log(url)
   
   const broadcastsWindow = new BrowserWindow({
@@ -415,6 +426,10 @@ ipcMain.handle('requesting-selected-display', async () => {
 ipcMain.handle('requesting-betterTTV', async () => {
   console.log("Sending BetterTTV preference of '" + betterTTV + "' to renderer.")
   return betterTTV
+})
+
+ipcMain.handle('requesting-archive', async () => {
+  return archive
 })
 
 ipcMain.handle('requesting-token', async() => {

@@ -15,7 +15,8 @@ function init() {
       "validation_time": "",
       "display_ID": "",
       "client_ID": "9lyexvrvkjfh2mnygtma57mr7fp5a6",                      //  Static variable set by Twitch
-      "betterttv_enabled": "true"
+      "betterttv_enabled": "true",
+      "archive": "Twitch"
     }
     fs.writeFileSync(userDataPath, JSON.stringify(settingsJSON, null, 4))
   }
@@ -25,12 +26,13 @@ function getSettings() {
   return settingsJSON = require (userDataPath)
 }
 
-function update(streamer, zoom, displayID, betterttv) {
+function update(streamer, zoom, displayID, betterttv, archive) {
   var settingsJSON = require (userDataPath)
   settingsJSON.streamer = streamer
   settingsJSON.zoom = zoom
   settingsJSON.display_ID = displayID
   settingsJSON.betterttv_enabled = betterttv
+  settingsJSON.archive = archive
   fs.writeFileSync(userDataPath, JSON.stringify(settingsJSON, null, 4))
   console.log("Settings updated.")
 }

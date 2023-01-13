@@ -3,7 +3,7 @@ const { ipcRenderer } = require('electron')
 window.addEventListener('DOMContentLoaded', async () => {
     var streamer = await ipcRenderer.invoke('requesting-streamer')
     var betterTTV = await ipcRenderer.invoke('requesting-betterTTV')
-
+    var archive = await ipcRenderer.invoke('requesting-archive')
     var zoom = await ipcRenderer.invoke('requesting-zoom')
     zoom = parseFloat(zoom).toFixed(1)
 
@@ -12,6 +12,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     var betterTTVCheckBox = document.getElementById('betterttv-checkbox')
     var displays = await ipcRenderer.invoke('requesting-displays')
     var displayID = await ipcRenderer.invoke('requesting-selected-display')
+    var archiveDropdown = document.getElementById('site-dropdown')
 
     const replaceText = (selector, text) => {
       const element = document.getElementById(selector)
@@ -44,6 +45,13 @@ window.addEventListener('DOMContentLoaded', async () => {
     for(var i = 0; i < displayDropdown.length; i++) {
       if (displayID == displayDropdown[i].value) {
         displayDropdown[i].selected = true;
+        break;
+      }
+    }
+
+    for(var i = 0; i < archiveDropdown.length; i++) {
+      if(archive == archiveDropdown[i].value) {
+        archiveDropdown[i].selected = true;
         break;
       }
     }
