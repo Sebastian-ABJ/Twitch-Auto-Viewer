@@ -296,15 +296,13 @@ function createBroadcastsWindow() {
   var psb_ID = powerSaveBlocker.start('prevent-display-sleep')
   console.log(psb_ID)
   targetDisplay = getTargetDisplay()
-  //const twitchURL = "https://www.twitch.tv/" + streamer + "/videos?filter=archives&sort=time"
-  //const youtubeURL = "https://www.youtube.com/results?search_query=" + streamer + "+stream+with+chat"
 
   const url = archive == "Twitch" ? "https://www.twitch.tv/" + streamer + "/videos?filter=archives&sort=time" :
                                     "https://www.youtube.com/results?search_query=" + streamer + "+stream+with+chat"
 
   console.log(url)
   
-  const broadcastsWindow = new BrowserWindow({
+  let broadcastsWindow = new BrowserWindow({
     width: 1280,
     height: 720,
     show:false,
@@ -323,7 +321,11 @@ function createBroadcastsWindow() {
   })
 
   ipcMain.once('close-broadcast-window', () => {
-      broadcastsWindow.close()
+    try {                                         // Closing another window with UI after manually closing a previous one
+      broadcastsWindow.close()                    // can cause a error output but function normally otherwise        
+    } catch (e) {
+      console.log(e);
+    }
   })
 
   broadcastsWindow.once('close', () => {

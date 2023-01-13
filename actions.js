@@ -95,7 +95,6 @@ function broadcastToggle() {
     } else {
         broadcastsOpen = false;
         ipcRenderer.send('close-broadcast-window')
-        updateLog("Closing broadcast window...")
         broadcastsButton.innerText = "Open Past Broadcasts"
     }
 }
