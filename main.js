@@ -11,6 +11,7 @@ var displayID
 var clientID
 
 var appWin = null
+var twitchWin = null
 
 if (require('electron-squirrel-startup')) app.quit();    //  Prevents startup before installation on Windows
 
@@ -260,7 +261,7 @@ function twitchWindow() {
   const url = "https://www.twitch.tv/" + streamer
   console.log(url)
   
-  const twitchWin = new BrowserWindow({
+  twitchWin = new BrowserWindow({
     width: 1280,
     height: 720,
     show:false,
@@ -273,7 +274,7 @@ function twitchWindow() {
     }
   })
   twitchWin.loadURL(url)
-  twitchWin.webContents.openDevTools();
+  //twitchWin.webContents.openDevTools();
   twitchWin.once('ready-to-show', () => {
     twitchWin.show()
     twitchWin.webContents.setZoomFactor(parseFloat(zoom))
@@ -289,6 +290,15 @@ function twitchWindow() {
       `
       twitchWin.webContents.executeJavaScript(code)
       })
+  })
+
+  ipcMain.once("streamer-offline", async () => {
+    twitchWin.close();
+  })
+
+  twitchWin.once('close', async () => {
+    appWin.webContents.send("window-closed");
+    twitchWin = null;
   })
 }
 
@@ -323,6 +333,14 @@ function createBroadcastsWindow() {
   ipcMain.once('close-broadcast-window', () => {
     try {                                         // Closing another window with UI after manually closing a previous one
       broadcastsWindow.close()                    // can cause a error output but function normally otherwise        
+    } catch (e) {
+      console.log(e);
+    }
+  })
+
+  ipcMain.once("stream-found", () => {
+    try {
+      broadcastsWindow.close()
     } catch (e) {
       console.log(e);
     }
@@ -399,8 +417,10 @@ function getTargetDisplay() {             //  Ensures the preferred display is a
 
 //  Begin various communication channels between main program and browser windows. Mostly accessing and editing global variables
 ipcMain.on('stream-found', () => {
-  console.log("Stream detected! Opening...")
-  twitchWindow()
+  if(twitchWin == null) {
+    console.log("Stream detected! Opening...")
+    twitchWindow()
+  }
 })
 
 ipcMain.on('open-broadcasts', () => {

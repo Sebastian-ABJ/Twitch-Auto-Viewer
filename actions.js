@@ -14,6 +14,8 @@ checkStreamButton.addEventListener("click", actionHandler)
 let broadcastsButton = document.getElementById("broadcasts-button")
 broadcastsButton.addEventListener("click", broadcastToggle)
 
+let statusText = document.getElementById("status")
+
 function actionHandler() {
     if(loopCancel) {
         streamLoop()
@@ -31,10 +33,11 @@ async function streamLoop() {
     var validationTime = await ipcRenderer.invoke('requesting-validationTime')
     checkStreamButton.disabled = false
     checkStreamButton.innerText="Stop"
+    checkStreamButton.style.background = "rgb(55, 50, 97)"
+
 
     updateLog("Monitoring Twitch for livestream...")
-
-    while(streamFound == false && loopCancel == false) {
+    while(loopCancel == false) {
         if(tokenExceedsValidationTime(validationTime)) {
             console.log("Token exceeds validation time.")
             updateLog("Time since last token validation longer than an hour.")
@@ -46,7 +49,6 @@ async function streamLoop() {
             } else {
                 updateLog("Token invalid, requesting new token...")
                 ipcRenderer.send('requesting-new-token')
-                pauseApp()
                 break
             }
         }
@@ -58,14 +60,22 @@ async function streamLoop() {
             }
             console.log(streamFound)
             updateLog("Opening livestream...")
-            stopLoop()
+            statusText.innerText = streamer + " is live!"
+            statusText.style.color = "rgb(0, 255, 0)"
             ipcRenderer.send('stream-found')
         } else {
             updateLog("Streamer offline.")
+            toggleStatusTextColor();
         }
-
-        await wait(5000) //in milliseconds
+        await wait(500) //in milliseconds
     }
+    if(streamFound) {
+        statusText.style.color = "rgb(0, 255, 0)"
+        statusText.innerText = streamer + " is live!"
+    } else {
+        statusText.style.color = "white";
+    }
+    statusText.style.color = "white";
     updateLog("Monitoring stopped.")
 }
 
@@ -80,7 +90,8 @@ function openSettings() {
 function stopLoop() {
     if (loopCancel == false) {
         loopCancel = true
-        checkStreamButton.innerText = "Go!"
+        checkStreamButton.innerText = "Start"
+        checkStreamButton.style.background = "rgb(82, 72, 168)"
         updateLog("Halting stream monitoring...")
     }
 }
@@ -88,7 +99,6 @@ function stopLoop() {
 function broadcastToggle() {
     if (!broadcastsOpen) {
         broadcastsOpen = true;
-        stopLoop()
         ipcRenderer.send('open-broadcasts')
         updateLog("Opening previous broadcasts...")
         broadcastsButton.innerText = "Close Past Broadcasts"
@@ -142,6 +152,14 @@ function updateLog(text) {                          //  Boy do I love applicatio
     logBox.scrollTop = logBox.scrollHeight              //  Keeps textbox scrolled down with new entries
 }
 
+function toggleStatusTextColor() {
+    if(statusText.style.color == "rgb(255, 0, 0)") {
+        statusText.style.color = "rgb(148, 18, 18)"
+    } else {
+        statusText.style.color = "rgb(255, 0, 0)"
+    }
+}
+
 function pauseApp() {
     //TODO: Prevent app from being used when authentication window is open
     updateLog("App paused until new token is acquired.")
@@ -160,8 +178,7 @@ ipcRenderer.on('new-token-sent', async () => {              //  Retrieves update
 })
 
 ipcRenderer.on('updated-settings', (event, streamer, speed) => {       //   Updates status text when new settings are applied
-    statusElement = document.getElementById('status')
-    statusText = statusElement.innerText = "Monitoring " + streamer
+    statusText.innerText = "Monitoring " + streamer
     updateLog("Settings updated.")
 })
 
@@ -169,4 +186,8 @@ ipcRenderer.on('broadcasts-closed', async () => {
     broadcastsOpen = false;
     updateLog("Closing broadcast window...")
     broadcastsButton.innerText = "Open Past Broadcasts"
+})
+
+ipcRenderer.on('window-closed', () => {
+    stopLoop();
 })
