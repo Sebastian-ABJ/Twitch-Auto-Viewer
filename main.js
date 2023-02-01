@@ -9,6 +9,7 @@ var archive
 var zoom
 var displayID
 var clientID
+var psb_ID
 
 var appWin = null
 var twitchWin = null
@@ -154,7 +155,9 @@ function createAppWindow() {
   //appWin.webContents.openDevTools();
   appWin.once('ready-to-show', () => {
     appWin.show()
-  }) 
+  })
+
+  var psb_ID = null; 
 
   ipcMain.on('requesting-new-token', () => {
     console.log("Generating new security token...")
@@ -166,7 +169,7 @@ function createAppWindow() {
         enableRemoteModule: true
       }
     });
-
+    
     authWin.loadURL("https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=9lyexvrvkjfh2mnygtma57mr7fp5a6&redirect_uri=http://localhost/callback");
 
     const {session: {webRequest}} = authWin.webContents;
@@ -416,10 +419,22 @@ function getTargetDisplay() {             //  Ensures the preferred display is a
 }
 
 //  Begin various communication channels between main program and browser windows. Mostly accessing and editing global variables
-ipcMain.on('stream-found', () => {
+ipcMain.on('start-monitoring', () => {
+  psb_ID = powerSaveBlocker.start('prevent-display-sleep')
+  console.log(psb_ID)
+})
+
+ipcMain.on('stop-monitoring', () => {
+  powerSaveBlocker.stop(psb_ID)
+})
+
+ipcMain.handle('is-stream-open', async () => {
   if(twitchWin == null) {
     console.log("Stream detected! Opening...")
     twitchWindow()
+    return false;
+  } else {
+    return true;
   }
 })
 
