@@ -520,3 +520,10 @@ ipcMain.on('update-token', (event, newToken) => {
   token = newToken
   validationTime = new Date()
 })
+
+ipcMain.on("disonnect-account", () => {
+  electronConstants().mySession.clearStorageData([], function (data) {
+    console.log(data);
+  })
+  token = null;
+})
