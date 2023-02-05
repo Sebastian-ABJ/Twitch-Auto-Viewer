@@ -116,6 +116,9 @@ if (!instanceLock) {
         path.join(__dirname, 'ext/ajopnjidmegmdimjlfnijceegpefgped/7.4.40_0')
       )
     }
+    await session.defaultSession.loadExtension(
+      path.join(__dirname, 'ext/cfhdojbkjhnklbpkdaibdccddilifddb/3.16_0')
+    )
 
 
     await verifyToken(token)          //  Gets access token and validates it. Authenticates user to create new one if none exist
