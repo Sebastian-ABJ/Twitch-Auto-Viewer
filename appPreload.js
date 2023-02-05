@@ -20,7 +20,6 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
 
     d = new Date()
-    logBox.value += d.toLocaleTimeString() + ": Successfully validated token: " + token
-    logBox.value += "\n" + d.toLocaleTimeString() + ": Token validated at: " + 
+    logBox.value += d.toLocaleDateString() + " " + d.toLocaleTimeString() + ": Successfully validated token."
       validationTime.toLocaleDateString() + " " + validationTime.toLocaleTimeString()
   })

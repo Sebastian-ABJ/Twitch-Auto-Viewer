@@ -33,19 +33,30 @@ async function streamLoop() {
     var validationTime = await ipcRenderer.invoke('requesting-validationTime')
     checkStreamButton.disabled = false
     checkStreamButton.innerText="Stop"
-    checkStreamButton.style.background = "rgb(55, 50, 97)"
+    checkStreamButton.style.backgroundColor = "rgb(55, 50, 97)"
 
+    ipcRenderer.send('start-monitoring');                           //Enables powersave blocker
+
+    if(await ipcRenderer.invoke('validate-token')) {
+        console.log("Token valid, requesting new time...")
+        validationTime = await ipcRenderer.invoke('requesting-validationTime')
+        updateLog("Updated token validation time.")
+    } else {
+        updateLog("Token invalid, requesting new token...")
+        ipcRenderer.send('requesting-new-token')
+        return
+    }
 
     updateLog("Monitoring Twitch for livestream...")
     while(loopCancel == false) {
         if(tokenExceedsValidationTime(validationTime)) {
             console.log("Token exceeds validation time.")
-            updateLog("Time since last token validation longer than an hour.")
             updateLog("Validating token...")
             if(await ipcRenderer.invoke('validate-token')) {
                 console.log("Token valid, requesting new time.")
                 validationTime = await ipcRenderer.invoke('requesting-validationTime')
                 updateLog("Token validated successfully.")
+                updateLog("Updated token validation time.");
             } else {
                 updateLog("Token invalid, requesting new token...")
                 ipcRenderer.send('requesting-new-token')
@@ -54,29 +65,31 @@ async function streamLoop() {
         }
         streamFound = await twitch.checkStream(token, client_id, streamer)
         if(streamFound) {
-            updateLog("STREAMER IS LIVE!")
+            statusText.style.color = "rgb(0, 255, 0)"
+            statusText.innerText = streamer + " is live!"
             if(broadcastsOpen) {
                 broadcastToggle()
+            } 
+            if(!isStreamOpen()) {
+                updateLog("STREAMER IS LIVE!")
+                updateLog("Opening livestream...")
+                ipcRenderer.send('open-stream')
+                statusText.innerText = streamer + " is live!"
+                statusText.style.color = "rgb(0, 255, 0)"
             }
-            console.log(streamFound)
-            updateLog("Opening livestream...")
-            statusText.innerText = streamer + " is live!"
-            statusText.style.color = "rgb(0, 255, 0)"
-            ipcRenderer.send('stream-found')
         } else {
-            updateLog("Streamer offline.")
+            if(isStreamOpen() == true) {
+                ipcRenderer.send("streamer-offline");
+            }
+            statusText.innerText = streamer + " is offline";
             toggleStatusTextColor();
         }
         await wait(500) //in milliseconds
     }
-    if(streamFound) {
-        statusText.style.color = "rgb(0, 255, 0)"
-        statusText.innerText = streamer + " is live!"
-    } else {
-        statusText.style.color = "white";
-    }
     statusText.style.color = "white";
     updateLog("Monitoring stopped.")
+    statusText.innerText = "Monitoring " + streamer;
+    ipcRenderer.send('stop-monitoring');
 }
 
 function openSettings() {
@@ -92,7 +105,9 @@ function stopLoop() {
         loopCancel = true
         checkStreamButton.innerText = "Start"
         checkStreamButton.style.background = "rgb(82, 72, 168)"
-        updateLog("Halting stream monitoring...")
+        checkStreamButton.onmouseover = () => {
+            checkStreamButton.backgroundColor = "rgb(71, 63, 146)";
+        }
     }
 }
 
@@ -107,6 +122,10 @@ function broadcastToggle() {
         ipcRenderer.send('close-broadcast-window')
         broadcastsButton.innerText = "Open Past Broadcasts"
     }
+}
+
+async function isStreamOpen() {
+    return await ipcRenderer.invoke('is-stream-open')
 }
 
 async function wait(time) {
@@ -134,12 +153,13 @@ function delay() {                              //  Modified wait function from 
 }
 
 function tokenExceedsValidationTime(validationTime) {       //  Adheres to Twitch's hourly token validation policy
-    var d = new Date()
-    if(d.getHours() > (validationTime.getHours())) {
+    var now = new Date()
+    if(now.getTime() - validationTime.getTime() >= 3600000) {
         return true
     } else {
         return false
     }
+    
 }
 
 function updateLog(text) {                          //  Boy do I love application logs
@@ -160,21 +180,10 @@ function toggleStatusTextColor() {
     }
 }
 
-function pauseApp() {
-    //TODO: Prevent app from being used when authentication window is open
-    updateLog("App paused until new token is acquired.")
-}
-
-function releaseApp() {
-    //TODO: Prevent app from being used when authentication window is open
-    updateLog("Releasing app control.")
-}
-
 //  Begin communication channels to main process
 ipcRenderer.on('new-token-sent', async () => {              //  Retrieves updated token should validation fail
     token = await ipcRenderer.invoke('requesting-token')
-    updateLog("New token acquired: " + token)
-    releaseApp()
+    updateLog("New token acquired.")
 })
 
 ipcRenderer.on('updated-settings', (event, streamer, speed) => {       //   Updates status text when new settings are applied

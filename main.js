@@ -9,6 +9,7 @@ var archive
 var zoom
 var displayID
 var clientID
+var psb_ID
 
 var appWin = null
 var twitchWin = null
@@ -120,7 +121,7 @@ if (!instanceLock) {
     await verifyToken(token)          //  Gets access token and validates it. Authenticates user to create new one if none exist
     .then(async response => {         //  Starts up app when valid token is retrieved
         if (response.returnVal == 401) {
-          createAuthWindow()
+          createAuthWindow(true)
         } else {
           validationTime = response.validationTime
           console.log("Token validated at: " + validationTime)
@@ -138,8 +139,8 @@ app.on('window-all-closed', () => {
 
 function createAppWindow() {
   appWin = new BrowserWindow({
-    width: 800,
-    height: 450,
+    width: 750,
+    height: 425,
     resizable: false,
     webPreferences: {  
       nodeIntegration:true,
@@ -154,19 +155,25 @@ function createAppWindow() {
   //appWin.webContents.openDevTools();
   appWin.once('ready-to-show', () => {
     appWin.show()
-  }) 
+  })
+
+  const session = appWin.webContents.session;
+
+  var psb_ID = null; 
 
   ipcMain.on('requesting-new-token', () => {
     console.log("Generating new security token...")
     authWin = new BrowserWindow({
-      width: 1000,
+      width: 720,
       height: 600,
       webPreferences: {
         nodeIntegration: true,
         enableRemoteModule: true
-      }
+      },
+      parent: appWin,
+      modal: true
     });
-
+    authWin.webContents.setZoomFactor(0.5)
     authWin.loadURL("https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=9lyexvrvkjfh2mnygtma57mr7fp5a6&redirect_uri=http://localhost/callback");
 
     const {session: {webRequest}} = authWin.webContents;
@@ -193,7 +200,6 @@ function createAppWindow() {
   })
 
   ipcMain.on("open-settings", () => {
-    let [appX, appY] = appWin.getPosition()
     settingsWin = new BrowserWindow({
       webPreferences: {
         nodeIntegration: true,
@@ -205,8 +211,6 @@ function createAppWindow() {
       width: 720,
       height: 255,
       resizable: false,
-      x: appX + 40,
-      y: appY + 120,
       parent: appWin,
       modal: true,
     })
@@ -253,6 +257,13 @@ function createAppWindow() {
       ipcMain.removeAllListeners('update-streamer-zoom-display', () => {});
       settingsWin.close();
     }) 
+  })
+
+  ipcMain.on('disconnect-account', () => {
+    session.clearStorageData("cookies");
+    token = "";
+    settings.updateToken("");
+    console.log("User disconnected from app.")
   })
 }
 
@@ -355,14 +366,14 @@ function createBroadcastsWindow() {
 function createAuthWindow(preload) {        //  Largely taken from Oauth2.0 docs, slightly modified for simplicity, admittedly less secure
   console.log("Generating new security token...")
   authWin = new BrowserWindow({
-    width: 1000,
+    width: 720,
     height: 600,
     webPreferences: {
       nodeIntegration: true,
       enableRemoteModule: true
     }
   });
-
+  authWin.webContents.setZoomFactor(0.5)
   authWin.loadURL("https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=9lyexvrvkjfh2mnygtma57mr7fp5a6&redirect_uri=http://localhost/callback");
 
   const {session: {webRequest}} = authWin.webContents;
@@ -382,8 +393,9 @@ function createAuthWindow(preload) {        //  Largely taken from Oauth2.0 docs
       validationTime = new Date()
       settings.updateValidationTime(validationTime)
 
-      createAppWindow()                             //  Secondary App window start because browser windows are asynchronous.
-                                                    //  I don't know how to wait for the authentication to finish so I branched the App start
+      if(preload) {
+        createAppWindow()                             //  Secondary App window start because browser windows are asynchronous.
+      }                                               //  I don't know how to wait for the authentication to finish so I branched the App start
       return authWin.close()
   });
 
@@ -416,11 +428,26 @@ function getTargetDisplay() {             //  Ensures the preferred display is a
 }
 
 //  Begin various communication channels between main program and browser windows. Mostly accessing and editing global variables
-ipcMain.on('stream-found', () => {
+ipcMain.on('start-monitoring', () => {
+  psb_ID = powerSaveBlocker.start('prevent-display-sleep')
+  console.log(psb_ID)
+})
+
+ipcMain.on('stop-monitoring', () => {
+  powerSaveBlocker.stop(psb_ID)
+})
+
+ipcMain.handle('is-stream-open', async () => {
   if(twitchWin == null) {
-    console.log("Stream detected! Opening...")
-    twitchWindow()
+    return false;
+  } else {
+    return true;
   }
+})
+
+ipcMain.on('open-stream', () => {
+  console.log("Stream detected! Opening...");
+  twitchWindow();
 })
 
 ipcMain.on('open-broadcasts', () => {
@@ -477,6 +504,7 @@ ipcMain.handle('validate-token', async () => {
   return returnVal
 })
 
+
 ipcMain.handle('requesting-validationTime', async () => {
   console.log("Sending " + validationTime + " to renderer.")
   return validationTime
@@ -504,11 +532,4 @@ ipcMain.on('update-token', (event, newToken) => {
   console.log("Aquired new token: " + newToken)
   token = newToken
   validationTime = new Date()
-})
-
-ipcMain.on("disonnect-account", () => {
-  electronConstants().mySession.clearStorageData([], function (data) {
-    console.log(data);
-  })
-  token = null;
 })

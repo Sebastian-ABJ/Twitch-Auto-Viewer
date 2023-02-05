@@ -5,6 +5,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     var betterTTV = await ipcRenderer.invoke('requesting-betterTTV')
     var archive = await ipcRenderer.invoke('requesting-archive')
     var zoom = await ipcRenderer.invoke('requesting-zoom')
+    var token = await ipcRenderer.invoke('requesting-token')
     zoom = parseFloat(zoom).toFixed(1)
 
     var zoomSlider = document.getElementById('zoom-slider')
@@ -13,6 +14,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     var displays = await ipcRenderer.invoke('requesting-displays')
     var displayID = await ipcRenderer.invoke('requesting-selected-display')
     var archiveDropdown = document.getElementById('site-dropdown')
+    var disconnectButton = document.getElementById("disconnect-button")
 
     const replaceText = (selector, text) => {
       const element = document.getElementById(selector)
@@ -27,6 +29,10 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     if(betterTTV == "false") {
       betterTTVCheckBox.checked = false
+    }
+
+    if(token == "") {
+      disconnectButton.innerText = "Log In"
     }
 
     displays.forEach(addDisplays)

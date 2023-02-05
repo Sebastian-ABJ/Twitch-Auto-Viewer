@@ -90,14 +90,14 @@ select {
     color: #EDF2F4;
     font-size: 24px;
     background-color: rgb(96, 121, 167);
-    border: 2px solid #EDF2F4;
+    border: 0px solid #EDF2F4;
     border-radius: 15px;
     padding: 10px 20px;
-    margin: 5px 10px;
+    margin: 5px 10px 5px 20px;
     display: inline-block;
 }
 .settings-button:hover {
-    background-color: rgb(52, 64, 83);
+    background-color: rgb(75, 98, 136);
 }
 
 #status-label {
@@ -130,6 +130,19 @@ select {
     vertical-align: middle;
 }
 
+#cancel-button {
+    float: left;
+}
+
+#update-button {
+    float: left;
+}
+
+#disconnect-button {
+    position: relative;
+    left: 75px
+}
+
 .button-container {
     display: inline;
     margin: auto 10px;
@@ -140,7 +153,7 @@ p.button {
     color: #EDF2F4;
     font-size: 28px;
     background-color: rgb(82, 72, 168);
-    border: 2px solid #EDF2F4;
+    border: 0px solid #EDF2F4;
     border-radius: 15px;
     padding: 10px 20px;
     margin: 5px 10px;
@@ -148,5 +161,5 @@ p.button {
 }
 
 p.button:hover {
-    background-color:rgb(55, 50, 97);
+    background-color:rgb(71, 63, 146)!important;
 }

@@ -1,10 +1,12 @@
 //  Handles updating the settings
 //  Pretty sure this needs to be a separate file but I forget why
 
-const { ipcRenderer } = require('electron')
+const { ipcRenderer } = require('electron');
+const Renderer = require('electron/renderer');
 
 let updateButton = document.getElementById("update-button");
 let cancelButton = document.getElementById("cancel-button");
+let disconnectButton = document.getElementById("disconnect-button");
 let zoomSlider = document.getElementById("zoom-slider");
 let zoomLabel = document.getElementById("zoom-label");
 let archiveDropdown = document.getElementById("site-dropdown");
@@ -21,6 +23,17 @@ function updateSettings() {
     var archive = archiveDropdown.value
     streamer = streamerElement.value
     ipcRenderer.send("update-streamer-zoom-display", streamer, zoom, displayID, betterTTV, archive)
+}
+
+disconnectButton.onclick = async () => {
+    let token = await ipcRenderer.invoke('requesting-token')
+    if(token == "") {
+        ipcRenderer.send("requesting-new-token");
+        disconnectButton.innerText = "Disconnect";
+    } else {
+        disconnectButton.innerText = "Sign In";
+        ipcRenderer.send("disconnect-account");
+    }
 }
 
 cancelButton.onclick = () => {
