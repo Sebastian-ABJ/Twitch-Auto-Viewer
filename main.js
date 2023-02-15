@@ -1,4 +1,4 @@
-const { app, BrowserWindow, screen, ipc, ipcMain, powerSaveBlocker, session, dialog, ipcRenderer } = require('electron')
+const { app, BrowserWindow, screen, ipcMain, powerSaveBlocker, session, dialog } = require('electron')
 const verifyToken = require('./verify-token')
 const settings = require('./settings.js')
 const path = require('path')
@@ -13,7 +13,6 @@ var psb_ID
 
 var appWin = null
 var twitchWin = null
-
 if (require('electron-squirrel-startup')) app.quit();    //  Prevents startup before installation on Windows
 
 /*  Windows installation logic recommended by Electron devs  */
@@ -176,9 +175,11 @@ function createAppWindow() {
       parent: appWin,
       modal: true
     });
-    authWin.webContents.setZoomFactor(0.5)
     authWin.loadURL("https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=9lyexvrvkjfh2mnygtma57mr7fp5a6&redirect_uri=http://localhost/callback");
-
+    authWin.once('ready-to-show', () => {
+      authWin.webContents.setZoomFactor(1.0)
+      authWin.show()
+    })
     const {session: {webRequest}} = authWin.webContents;
 
     const filter = {
@@ -340,8 +341,8 @@ function createBroadcastsWindow() {
   })
   broadcastsWindow.loadURL(url)
   broadcastsWindow.once('ready-to-show', () => {
-    broadcastsWindow.show()
     broadcastsWindow.webContents.setZoomFactor(parseFloat(zoom))
+    broadcastsWindow.show()
   })
 
   ipcMain.once('close-broadcast-window', () => {
@@ -373,12 +374,14 @@ function createAuthWindow(preload) {        //  Largely taken from Oauth2.0 docs
     height: 600,
     webPreferences: {
       nodeIntegration: true,
-      enableRemoteModule: true
+      enableRemoteModule: true,
     }
   });
-  authWin.webContents.setZoomFactor(0.5)
   authWin.loadURL("https://id.twitch.tv/oauth2/authorize?response_type=token&client_id=9lyexvrvkjfh2mnygtma57mr7fp5a6&redirect_uri=http://localhost/callback");
-
+  authWin.once('ready-to-show', () => {
+    authWin.webContents.setZoomFactor(1.0)
+    authWin.show()
+  })
   const {session: {webRequest}} = authWin.webContents;
 
   const filter = {
