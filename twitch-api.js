@@ -23,7 +23,14 @@ async function checkStream(token, clientID, streamer) {
             isLive = true
         }
     })
+    .catch(error => {
+        console.log(error)
+    })
     return isLive
+}
+
+async function getProfilePicture(token, clientID, streamer) {
+    
 }
 
 module.exports = {checkStream}
