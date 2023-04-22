@@ -4,16 +4,17 @@
     <link rel="stylesheet" href="styles.css">
     <meta charset="UTF-8">
     <!-- https://developer.mozilla.org/en-US/docs/Web/HTTP/CSP -->
-    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'">
-    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'">
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; img-src 'self' data: https://static-cdn.jtvnw.net;">
+    <meta http-equiv="X-Content-Security-Policy" content="default-src 'self'; script-src 'self'; img-src 'self' data: https://static-cdn.jtvnw.net;">
     <title>Twitch Auto Viewer</title>
   </head>
   <body id="app-body">
     <h1 class="title">Twitch Auto Viewer</h1>
     <hr>
-    <br>
-    <span id="status-label">Status: </span><span id="status">Monitoring nobody.</span>
-    <br>
+    <div id="status-container">
+      <span id="status-label">Status: </span><span id="status">Monitoring nobody.</span>
+      <img id="streamer-pfp" src="" width="30" height="30">
+    </div>
     <br>
     <p id="settings-button" class="button" name="settings-button">Settings</p>
     <p id="check-stream-button" class="button" name="check-stream-button">Start</p>

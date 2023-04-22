@@ -10,6 +10,8 @@ function init() {
     console.log("No settings found, initializing to defaults...")
     settingsJSON = {
       "streamer": "Nobody",
+      "offline_pfp": "",
+      "online_pfp": "",
       "zoom": "1.0",
       "token":"",
       "validation_time": "",
@@ -26,9 +28,11 @@ function getSettings() {
   return settingsJSON = require (userDataPath)
 }
 
-function update(streamer, zoom, displayID, betterttv, archive) {
+function update(streamer, offlinePFP, onlinePFP, zoom, displayID, betterttv, archive) {
   var settingsJSON = require (userDataPath)
   settingsJSON.streamer = streamer
+  settingsJSON.offline_pfp = offlinePFP;
+  settingsJSON.online_pfp = onlinePFP;
   settingsJSON.zoom = zoom
   settingsJSON.display_ID = displayID
   settingsJSON.betterttv_enabled = betterttv

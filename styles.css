@@ -3,6 +3,7 @@
     display: block;
     text-align: center;
     cursor: default;
+    justify-content: center;
 }
 
 #settings {
@@ -100,15 +101,12 @@ select {
     background-color: rgb(75, 98, 136);
 }
 
-#status-label {
+#status-label, #status {
     font-family: Arial, Helvetica, sans-serif;
     color: #EDF2F4;
     font-size: 24px;
-}
-#status {
-    font-family: Arial, Helvetica, sans-serif;
-    color: #EDF2F4;
-    font-size: 24px;
+    align-items: center;
+    display: inline-block;
 }
 
 #log-box {
@@ -162,4 +160,18 @@ p.button {
 
 p.button:hover {
     background-color:rgb(71, 63, 146)!important;
+}
+
+img {
+    margin: 0px 0px 0px 5px;
+    display: inline-block;
+    vertical-align: top;
+    border-style: solid;
+    border-color: #EDF2F4;
+    border-width: 1px;
+}
+
+#status-container {
+    text-align: center;
+    line-height: 34px;
 }

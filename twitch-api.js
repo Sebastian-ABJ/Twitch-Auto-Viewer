@@ -3,9 +3,8 @@
 const fetch = require('node-fetch')
 
 async function checkStream(token, clientID, streamer) {
-    isLive = false
-    api = "https://api.twitch.tv/helix/streams?user_login=" + streamer
-    console.log("Checking " + api)
+    let isLive = false
+    let api = "https://api.twitch.tv/helix/streams?user_login=" + streamer
     await fetch(
         api,
         {
@@ -16,7 +15,6 @@ async function checkStream(token, clientID, streamer) {
         })
     .then(response => response.json())
     .then(async response => {
-        console.log(response)
         if(response.data.length == 0) {
             isLive = false
         } else if(response.data[0].type == "live") {
@@ -29,8 +27,27 @@ async function checkStream(token, clientID, streamer) {
     return isLive
 }
 
-async function getProfilePicture(token, clientID, streamer) {
-    
+async function getProfilePictures(token, clientID, streamer) {
+    let api = "https://api.twitch.tv/helix/users?login=" + streamer
+    let responseData = {
+        "onlinePFP": "",
+        "offlinePFP": ""
+    }
+    await fetch(
+        api,
+        {
+            "headers": {
+                "Authorization": "Bearer " + token,
+                "Client-Id": clientID
+            }
+        })
+    .then(response => response.json())
+    .then(async response => {
+        console.log(response)
+        responseData.onlinePFP = response.data[0].profile_image_url;
+        responseData.offlinePFP = response.data[0].offline_image_url
+    })
+    return responseData;
 }
 
-module.exports = {checkStream}
+module.exports = {checkStream, getProfilePictures}

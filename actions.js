@@ -70,7 +70,7 @@ async function streamLoop() {
             if(broadcastsOpen) {
                 broadcastToggle()
             } 
-            if(!isStreamOpen()) {
+            if(await isStreamOpen() == false) {
                 updateLog("STREAMER IS LIVE!")
                 updateLog("Opening livestream...")
                 ipcRenderer.send('open-stream')
@@ -78,7 +78,7 @@ async function streamLoop() {
                 statusText.style.color = "rgb(0, 255, 0)"
             }
         } else {
-            if(isStreamOpen() == true) {
+            if(await isStreamOpen() == true) {
                 ipcRenderer.send("streamer-offline");
             }
             statusText.innerText = streamer + " is offline";
@@ -199,4 +199,10 @@ ipcRenderer.on('broadcasts-closed', async () => {
 
 ipcRenderer.on('window-closed', () => {
     stopLoop();
+})
+
+ipcRenderer.on('new-profile-picture', async () => {
+    let streamerPFPElement = document.getElementById("streamer-pfp")
+    let newPFP = await ipcRenderer.invoke('requesting-online-pfp')
+    streamerPFPElement.src = newPFP
 })

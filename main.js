@@ -1,10 +1,14 @@
 const { app, BrowserWindow, screen, ipcMain, powerSaveBlocker, session, dialog } = require('electron')
+const twitch = require('./twitch-api')
 const verifyToken = require('./verify-token')
 const settings = require('./settings.js')
 const path = require('path')
+const { profile } = require('console')
 var token
 var validationTime
 var streamer
+var offlinePFP
+var onlinePFP
 var archive
 var zoom
 var displayID
@@ -102,8 +106,11 @@ if (!instanceLock) {
     settings.init()                                 //  Gets relevant settings or creates default ones if none exist
     var retrievedSettings = settings.getSettings()  
 
+    console.log(retrievedSettings)
     token = retrievedSettings.token
     streamer = retrievedSettings.streamer
+    offlinePFP = retrievedSettings.offline_pfp
+    onlinePFP = retrievedSettings.online_pfp
     zoom = retrievedSettings.zoom
     clientID = retrievedSettings.client_ID
     archive = retrievedSettings.archive
@@ -118,7 +125,6 @@ if (!instanceLock) {
     await session.defaultSession.loadExtension(
       path.join(__dirname, 'ext/cfhdojbkjhnklbpkdaibdccddilifddb/3.16_0')
     )
-
 
     await verifyToken(token)          //  Gets access token and validates it. Authenticates user to create new one if none exist
     .then(async response => {         //  Starts up app when valid token is retrieved
@@ -170,7 +176,8 @@ function createAppWindow() {
       height: 600,
       webPreferences: {
         nodeIntegration: true,
-        enableRemoteModule: true
+        enableRemoteModule: true,
+        contentSecurityPolicy: "default-src 'self'; script-src 'self'; img-src 'self' data: https://static-cdn.jtvnw.net;"
       },
       parent: appWin,
       modal: true
@@ -221,10 +228,16 @@ function createAppWindow() {
     //settingsWin.webContents.openDevTools()
     settingsWin.loadFile('settings.html')
 
-    ipcMain.once('update-streamer-zoom-display', (event, newStreamer, newZoom, newDisplay, newBetterTTV, newArchive) => {
+    ipcMain.once('update-streamer-zoom-display', async (event, newStreamer, newZoom, newDisplay, newBetterTTV, newArchive) => {
       if(streamer != newStreamer) {
         console.log("Changed streamer from " + streamer + " to " + newStreamer)
         streamer = newStreamer
+        profileImages = await twitch.getProfilePictures(token, clientID, streamer)
+        console.log(profileImages)
+        offlinePFP = profileImages.offlinePFP;
+        console.log(offlinePFP)
+        onlinePFP = profileImages.onlinePFP;
+        appWin.webContents.send("new-profile-picture");
       }
       if(zoom != newZoom) {
         console.log("Changing zoom factor from " + zoom + " to " + newZoom)
@@ -250,7 +263,7 @@ function createAppWindow() {
         archive = newArchive
       }
       console.log("Updating saved settings...")
-      settings.update(streamer, zoom, displayID, betterTTV, archive)
+      settings.update(streamer, offlinePFP, onlinePFP, zoom, displayID, betterTTV, archive)
 
       appWin.webContents.send('updated-settings', streamer, zoom)
 
@@ -466,6 +479,16 @@ ipcMain.on('open-broadcasts', () => {
 ipcMain.handle('requesting-streamer', async () => {
   console.log("Sending " + streamer + " to renderer.")
   return streamer
+})
+
+ipcMain.handle('requesting-offline-pfp', async () => {
+  console.log("Sending offline PFP url to renderer.")
+  return offlinePFP
+})
+
+ipcMain.handle('requesting-online-pfp', async () => {
+  console.log("Sending online PFP url " + onlinePFP + " to renderer.")
+  return onlinePFP
 })
 
 ipcMain.handle("requesting-zoom", async () => {
