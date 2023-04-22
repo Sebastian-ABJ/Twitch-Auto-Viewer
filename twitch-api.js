@@ -47,6 +47,10 @@ async function getProfilePictures(token, clientID, streamer) {
         responseData.onlinePFP = response.data[0].profile_image_url;
         responseData.offlinePFP = response.data[0].offline_image_url
     })
+    .catch(error => {
+        console.log(error)
+        return null
+    })
     return responseData;
 }
 

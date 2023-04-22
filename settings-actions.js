@@ -22,6 +22,9 @@ function updateSettings() {
     var betterTTV = betterTTVCheckbox.checked.toString()
     var archive = archiveDropdown.value
     streamer = streamerElement.value
+    if(streamer == "") {
+        streamer = "nobody";
+    }
     ipcRenderer.send("update-streamer-zoom-display", streamer, zoom, displayID, betterTTV, archive)
 }
 
